@@ -70,9 +70,30 @@ const { title, description = 'A minimal Astro blog hosted on Azure Static Web Ap
         text-decoration: none;
       }
 
-      .site-nav div {
+      .site-nav a:hover,
+      .site-nav a:focus-visible {
+        color: var(--accent);
+      }
+
+      .nav-links,
+      .social-links {
         display: flex;
-        gap: 1rem;
+        align-items: center;
+        gap: 0.85rem;
+      }
+
+      .nav-links {
+        flex-wrap: wrap;
+        justify-content: flex-end;
+      }
+
+      .social-links {
+        border-left: 1px solid var(--border);
+        padding-left: 0.85rem;
+      }
+
+      .social-links a {
+        color: var(--muted);
       }
 
       main {
@@ -358,6 +379,20 @@ const { title, description = 'A minimal Astro blog hosted on Azure Static Web Ap
       }
 
       @media (max-width: 640px) {
+        .site-nav {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+
+        .nav-links {
+          justify-content: flex-start;
+        }
+
+        .social-links {
+          border-left: 0;
+          padding-left: 0;
+        }
+
         h1 {
           font-size: 2.5rem;
         }
@@ -398,9 +433,14 @@ const { title, description = 'A minimal Astro blog hosted on Azure Static Web Ap
     <header>
       <nav class="site-nav" aria-label="Main navigation">
         <a href="/">madebygps</a>
-        <div>
+        <div class="nav-links">
           <a href="/blog/">Blog</a>
           <a href="/about/">About</a>
+          <div class="social-links" aria-label="Social links">
+            <a href="https://x.com/madebygps" target="_blank" rel="me noopener noreferrer">X</a>
+            <a href="https://www.linkedin.com/in/madebygps" target="_blank" rel="me noopener noreferrer">LinkedIn</a>
+            <a href="https://www.youtube.com/madebygps" target="_blank" rel="me noopener noreferrer">YouTube</a>
+          </div>
         </div>
       </nav>
     </header>
