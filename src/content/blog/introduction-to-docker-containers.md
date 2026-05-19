@@ -3,7 +3,7 @@ title: "Introduction to Docker Containers"
 description: "Oh Docker... let's get started."
 pubDate: 2022-01-16
 updatedDate: 2024-04-28
-tags: ["cloud", "docker"]
+tags: ["cloud"]
 featureImage: "https://images.unsplash.com/photo-1605745341075-1b7460b99df8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxMTc3M3wwfDF8c2VhcmNofDN8fGRvY2tlcnxlbnwwfHx8fDE2NDIyOTYwODY&ixlib=rb-1.2.1&q=80&w=2000"
 ---
 

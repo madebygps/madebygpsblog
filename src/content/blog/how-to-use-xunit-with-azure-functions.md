@@ -3,7 +3,7 @@ title: "How to use Xunit with Azure Functions in Visual Studio Code"
 description: "testing one two testing..."
 pubDate: 2021-04-07
 updatedDate: 2021-06-28
-tags: ["azure", "csharp", "functions", "testing"]
+tags: ["azure"]
 featureImage: "https://madebygps.azurewebsites.net/content/images/2021/04/Screen-Shot-2021-04-10-at-9.25.53-AM-1.png"
 ---
 

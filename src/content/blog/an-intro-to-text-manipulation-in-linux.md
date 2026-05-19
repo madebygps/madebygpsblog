@@ -3,7 +3,7 @@ title: "An intro to text manipulation in Linux"
 description: "Almost everything is a text file in Linux."
 pubDate: 2021-02-16
 updatedDate: 2021-06-28
-tags: ["kali", "linux"]
+tags: ["linux"]
 featureImage: "https://madebygps.azurewebsites.net/content/images/2021/02/Screenshot-2021-02-16-063954.jpg"
 ---
 

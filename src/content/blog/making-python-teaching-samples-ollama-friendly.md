@@ -2,19 +2,10 @@
 title: "Making Python Teaching Samples Ollama-Friendly"
 description: "A practical guide to adding Ollama support to Python teaching samples with clean environment config, provider switching, devcontainers, compatibility testing, and local embeddings."
 pubDate: 2026-05-19
-tags: ["python", "ai", "ollama", "devcontainers"]
+tags: ["python", "ai"]
 ---
 
-Over the past year, my colleague, the great [Pamela Fox](https://www.pamelafox.org/), and I have been delivering a series of educational courses and workshops on Python and generative AI.
-
-Here are the main series and the materials behind them:
-
-| Series | Topics covered | Resources |
-| --- | --- | --- |
-| Python + AI | LLMs, embeddings, RAG, vision, structured outputs, AI quality and safety, tool calling, agents, MCP | [English](https://aka.ms/pythonai/resources), [Spanish](https://aka.ms/pythonia/recursos) |
-| Python + MCP | FastMCP servers, cloud deployment, authentication | [English](https://aka.ms/pythonmcp/resources), [Spanish](https://aka.ms/pythonmcp/recursos) |
-| Python + Agents | First agents, context and memory, monitoring, evaluation, workflows, multi-agent orchestration, human-in-the-loop | [English](https://aka.ms/pythonagents/resources), [Spanish](https://aka.ms/pythonagentes/recursos) |
-| Hosting Agents in Foundry | Microsoft Agent Framework, LangChain and LangGraph, quality and safety evaluations | [English](https://aka.ms/foundry-hosted/resources), [Spanish](https://aka.ms/hospeda/recursos) |
+Over the past year, my colleague, the great [Pamela Fox](https://www.pamelafox.org/), and I have been delivering educational courses and workshops on Python and generative AI.
 
 The concrete repos behind these patterns include [python-openai-demos](https://github.com/Azure-Samples/python-openai-demos), [python-mcp-demos](https://github.com/Azure-Samples/python-mcp-demos), and [python-ai-agent-frameworks-demos](https://github.com/Azure-Samples/python-ai-agent-frameworks-demos).
 

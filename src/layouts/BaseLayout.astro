@@ -152,20 +152,39 @@ const { title, description = 'A minimal Astro blog hosted on Azure Static Web Ap
         max-width: 58ch;
       }
 
-      .intro {
-        padding: 1.5rem 0 1.25rem;
-      }
-
       .about-intro {
-        padding-top: 0.75rem;
+        padding: 1.25rem 0 1.25rem;
       }
 
       .about-intro h1 {
-        font-size: 2.6rem;
+        font-size: 2.25rem;
+        max-width: none;
       }
 
       .about-intro .lede {
         font-size: 1rem;
+      }
+
+      .about-page {
+        margin-inline: auto;
+        max-width: 40rem;
+      }
+
+      .about-copy .eyebrow,
+      .about-copy h1,
+      .about-copy .lede,
+      .about-copy p:not(.eyebrow):not(.lede) {
+        margin-left: 0;
+        margin-right: 0;
+      }
+
+      .about-copy .lede {
+        max-width: 38rem;
+      }
+
+      .about-copy p:not(.eyebrow):not(.lede),
+      .about-section-copy p {
+        max-width: 38rem;
       }
 
       .actions {
@@ -208,14 +227,16 @@ const { title, description = 'A minimal Astro blog hosted on Azure Static Web Ap
 
       .about-section {
         border-top: 1px solid var(--border);
-        padding-top: 1.75rem;
+        margin-top: 0.75rem;
+        padding-top: 1.5rem;
       }
 
-      .link-list {
-        display: grid;
-        gap: 0.45rem;
-        margin: 1rem 0 0;
-        padding-left: 1.25rem;
+      .about-section h2 {
+        margin-top: 0;
+      }
+
+      .about-section-copy p:first-child {
+        margin-top: 0;
       }
 
       .resource-list {
@@ -240,7 +261,7 @@ const { title, description = 'A minimal Astro blog hosted on Azure Static Web Ap
       .post-list {
         display: grid;
         gap: 1rem;
-        grid-template-columns: repeat(auto-fit, minmax(min(100%, 28rem), 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
         list-style: none;
         margin-top: 1.5rem;
         padding: 0;
@@ -250,6 +271,8 @@ const { title, description = 'A minimal Astro blog hosted on Azure Static Web Ap
         border: 1px solid var(--border);
         border-radius: 0.5rem;
         background: var(--surface);
+        display: flex;
+        flex-direction: column;
         padding: 1.25rem;
       }
 
@@ -270,6 +293,15 @@ const { title, description = 'A minimal Astro blog hosted on Azure Static Web Ap
       .post-meta {
         color: var(--muted);
         margin: 0;
+      }
+
+      .post-card p:not(.post-meta) {
+        margin-top: 0.75rem;
+      }
+
+      .post-card .tags {
+        margin-top: auto;
+        padding-top: 1rem;
       }
 
       .tags {
@@ -399,7 +431,7 @@ const { title, description = 'A minimal Astro blog hosted on Azure Static Web Ap
         }
 
         .about-intro h1 {
-          font-size: 2.15rem;
+          font-size: 2rem;
         }
 
         .resource-list {

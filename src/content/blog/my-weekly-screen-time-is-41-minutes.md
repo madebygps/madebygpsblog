@@ -2,7 +2,7 @@
 title: "My weekly screen time average is 41 minutes"
 description: "because my phone is purely a communication tool."
 pubDate: 2025-12-14
-tags: ["digital minimalism", "personal"]
+tags: ["personal"]
 canonicalUrl: "https://madebygps.substack.com/p/my-weekly-screen-time-is-41-minutes"
 ---
 

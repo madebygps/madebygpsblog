@@ -3,7 +3,7 @@ title: "An intro to Process Management in Linux"
 description: "A process is a program that is running and a Linux system typically has hundreds of processes running simultaneously."
 pubDate: 2021-02-21
 updatedDate: 2021-06-28
-tags: ["linux", "lpi101"]
+tags: ["linux"]
 featureImage: "https://madebygps.azurewebsites.net/content/images/2021/02/Screenshot-from-2021-02-21-14-21-46-cropped-1--1.jpg"
 ---
 

@@ -3,7 +3,7 @@ title: "An intro to archiving and compression in Linux"
 description: "It's often useful to make copies of things an move large collections of files from place to place."
 pubDate: 2021-03-06
 updatedDate: 2021-06-28
-tags: ["linux", "lpi101"]
+tags: ["linux"]
 featureImage: "https://madebygps.azurewebsites.net/content/images/2021/03/Screenshot-from-2021-03-06-16-35-11-cropped.jpg"
 ---
 

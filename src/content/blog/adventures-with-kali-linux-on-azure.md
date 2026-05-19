@@ -3,7 +3,7 @@ title: "Adventures with Kali Linux on Azure #1"
 description: "This image is old!"
 pubDate: 2021-02-15
 updatedDate: 2021-06-28
-tags: ["azure", "kali", "linux"]
+tags: ["azure", "linux"]
 featureImage: "https://madebygps.azurewebsites.net/content/images/2021/02/Screenshot-2021-02-14-225523.jpg"
 ---
 

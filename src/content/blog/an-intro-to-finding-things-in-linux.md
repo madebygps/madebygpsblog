@@ -3,7 +3,7 @@ title: "An intro to finding things in Linux"
 description: "locate, whereis, which and find commands"
 pubDate: 2021-02-15
 updatedDate: 2021-06-28
-tags: ["kali", "linux"]
+tags: ["linux"]
 featureImage: "https://madebygps.azurewebsites.net/content/images/2021/02/Screenshot-2021-02-15-143343.jpg"
 ---
 

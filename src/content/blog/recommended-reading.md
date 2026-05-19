@@ -2,7 +2,7 @@
 title: "Recommended Reading"
 description: "From learning new things about myself to understanding why I behave in certain ways, from improving my faults to overcoming trauma, and overall becoming a better person, in moments of deep loneliness and despair, as well as during periods of intense curiosity and feeling lost, I have always turned first to books for guidance."
 pubDate: 2025-09-20
-tags: ["reading", "books", "personal"]
+tags: ["personal"]
 canonicalUrl: "https://madebygps.substack.com/p/recommended-reading"
 ---
 

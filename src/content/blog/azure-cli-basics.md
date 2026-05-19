@@ -3,7 +3,7 @@ title: "Azure CLI basics"
 description: "It takes me 30 seconds to deploy a VM with the cli vs 6 ish minutes in the portal..."
 pubDate: 2022-11-22
 updatedDate: 2024-04-28
-tags: ["azure", "linux", "cli"]
+tags: ["azure"]
 ---
 <h2 id="whats-the-advantage-of-using-an-azure-command-line-tool">What's the advantage of using an Azure command-line tool?</h2>
 <p>Azure runs on automation. Every action inside the portal translates to code being executed to read, create, modify, or delete resources. Azure command-line tools automate routine operations, standardize database failovers, and pull data that provide powerful insight.</p>

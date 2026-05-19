@@ -3,7 +3,7 @@ title: "An intro to managing user environment variables"
 description: "There are two types of variables: shell and environment."
 pubDate: 2021-02-25
 updatedDate: 2021-06-28
-tags: ["linux", "lpi101"]
+tags: ["linux"]
 featureImage: "https://madebygps.azurewebsites.net/content/images/2021/02/Screenshot-from-2021-02-25-11-39-51.png"
 ---
 
