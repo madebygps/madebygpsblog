@@ -1,0 +1,56 @@
+---
+import { getCollection, render, type CollectionEntry } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { tagSlug } from '../../lib/tags';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog');
+
+  return posts.map((post) => ({
+    params: { id: post.id },
+    props: { post }
+  }));
+}
+
+type Props = {
+  post: CollectionEntry<'blog'>;
+};
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+const formattedDate = new Intl.DateTimeFormat('en', { dateStyle: 'medium' }).format(
+  post.data.pubDate
+);
+---
+
+<BaseLayout title={post.data.title} description={post.data.description}>
+  <article>
+    <p class="post-meta">{formattedDate}</p>
+    {
+      post.data.canonicalUrl && (
+        <p class="post-meta">
+          Originally published on <a href={post.data.canonicalUrl}>Substack</a>
+        </p>
+      )
+    }
+    <h1>{post.data.title}</h1>
+    <p class="lede">{post.data.description}</p>
+    {
+      post.data.featureImage && (
+        <img class="feature-image" src={post.data.featureImage} alt="" loading="lazy" />
+      )
+    }
+    <Content />
+    {
+      post.data.tags.length > 0 && (
+        <div class="tags" aria-label="Tags">
+          {post.data.tags.map((tag) => (
+            <a class="tag" href={`/blog/tags/${tagSlug(tag)}/`}>
+              {tag}
+            </a>
+          ))}
+        </div>
+      )
+    }
+  </article>
+</BaseLayout>

@@ -1,0 +1,64 @@
+---
+import { getCollection, type CollectionEntry } from 'astro:content';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { tagSlug } from '../../../lib/tags';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog');
+  const tagMap = new Map<string, { tag: string; posts: CollectionEntry<'blog'>[] }>();
+
+  posts.forEach((post) => {
+    post.data.tags.forEach((tag) => {
+      const slug = tagSlug(tag);
+      const tagGroup = tagMap.get(slug) ?? { tag, posts: [] };
+      tagGroup.posts.push(post);
+      tagMap.set(slug, tagGroup);
+    });
+  });
+
+  return [...tagMap.entries()].map(([slug, tagGroup]) => ({
+    params: { tag: slug },
+    props: {
+      tag: tagGroup.tag,
+      posts: tagGroup.posts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+    }
+  }));
+}
+
+type Props = {
+  tag: string;
+  posts: CollectionEntry<'blog'>[];
+};
+
+const { tag, posts } = Astro.props;
+
+const formatDate = (date: Date) =>
+  new Intl.DateTimeFormat('en', { dateStyle: 'medium' }).format(date);
+---
+
+<BaseLayout title={`${tag} posts`} description={`Posts tagged ${tag}.`}>
+  <p class="post-meta"><a href="/blog/">All posts</a></p>
+  <h1>{tag}</h1>
+  <p class="lede">{posts.length} {posts.length === 1 ? 'post' : 'posts'} tagged {tag}.</p>
+
+  <ul class="post-list">
+    {
+      posts.map((post) => (
+        <li class="post-card">
+          <h2>
+            <a href={`/blog/${post.id}/`}>{post.data.title}</a>
+          </h2>
+          <p class="post-meta">{formatDate(post.data.pubDate)}</p>
+          <p>{post.data.description}</p>
+          <div class="tags" aria-label={`Tags for ${post.data.title}`}>
+            {post.data.tags.map((postTag) => (
+              <a class="tag" href={`/blog/tags/${tagSlug(postTag)}/`}>
+                {postTag}
+              </a>
+            ))}
+          </div>
+        </li>
+      ))
+    }
+  </ul>
+</BaseLayout>

@@ -1,0 +1,61 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { tagSlug } from '../../lib/tags';
+
+const posts = (await getCollection('blog')).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+);
+
+const formatDate = (date: Date) =>
+  new Intl.DateTimeFormat('en', { dateStyle: 'medium' }).format(date);
+
+const tagCounts = posts.reduce((counts, post) => {
+  post.data.tags.forEach((tag) => counts.set(tag, (counts.get(tag) ?? 0) + 1));
+  return counts;
+}, new Map<string, number>());
+
+const tags = [...tagCounts.entries()].sort(([firstTag], [secondTag]) =>
+  firstTag.localeCompare(secondTag)
+);
+---
+
+<BaseLayout title="Blog">
+  <h1>Blog</h1>
+  <p class="lede">All posts, newest first.</p>
+
+  {
+    tags.length > 0 && (
+      <nav class="tag-cloud" aria-label="Browse by topic">
+        {tags.map(([tag, count]) => (
+          <a class="tag" href={`/blog/tags/${tagSlug(tag)}/`}>
+            {tag} <span aria-label={`${count} posts`}>{count}</span>
+          </a>
+        ))}
+      </nav>
+    )
+  }
+
+  <ul class="post-list">
+    {
+      posts.map((post) => (
+        <li class="post-card">
+          <h2>
+            <a href={`/blog/${post.id}/`}>{post.data.title}</a>
+          </h2>
+          <p class="post-meta">{formatDate(post.data.pubDate)}</p>
+          <p>{post.data.description}</p>
+          {post.data.tags.length > 0 && (
+            <div class="tags" aria-label={`Tags for ${post.data.title}`}>
+              {post.data.tags.map((tag) => (
+                <a class="tag" href={`/blog/tags/${tagSlug(tag)}/`}>
+                  {tag}
+                </a>
+              ))}
+            </div>
+          )}
+        </li>
+      ))
+    }
+  </ul>
+</BaseLayout>
