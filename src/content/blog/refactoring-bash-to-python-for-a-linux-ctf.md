@@ -25,6 +25,14 @@ That mattered because "should this be Python?" is too broad by itself. Some of t
 
 So we categorized the work. Flag generation, state files, tokens, MOTD generation, the `verify` command, and many challenge files belonged in Python. Package installation, user creation, and filesystem tools like `mkfs.ext4`, `mount`, and `umount` still belonged to system commands. Things like SSH configuration, systemd services, and some challenges needed both.
 
+The table from that planning pass looked like this:
+
+| Category | Responsibilities |
+| --- | --- |
+| Pure Python | Flag generation and hashing, verification tokens, CTF state storage, MOTD, setup readiness check, `verify` CLI, challenges 1, 2, 3, 5, 7, 8, 9, 13, 15, 16, and completion marker |
+| Subprocess only | Package installation, user management for `ctf_user`, `flag_user`, and `old_admin`, and challenge 18 filesystem commands |
+| Mixed | OS and SSH config, challenges 4, 6, 10, 11, 12, 14, and 17 |
+
 That was the actual design decision. This was not a Bash versus Python rewrite. It was a split between coordination logic and operating system actions.
 
 ## Why subprocess clicked
