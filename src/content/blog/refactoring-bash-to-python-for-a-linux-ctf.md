@@ -52,13 +52,13 @@ One small example was the DNS challenge. The old setup touched `/etc/resolv.conf
 
 ## What Testing Exposed
 
-The refactor changed how the lab had to be shipped. Before, Terraform could download one file from GitHub. After the refactor, the VM needed `ctf_setup.sh`, `setup/`, and `verify/` together.
+The refactor changed how the lab had to be shipped. Before, Terraform could download one file from GitHub. After the refactor, the VM needed `ctf_setup.sh`, `setup/`, and `verify/` together. Testing exposed that we were trying to use one deployment path for two different jobs.
 
 Putting all of that into cloud first-boot data was the wrong shape. AWS user data is limited to 16 KB before base64 encoding. Azure custom data is limited to 64 KB. GCP gives more room, but metadata still should not become a package transport system.
 
-So the learner path moved to release assets. A GitHub release now ships a setup archive and checksum. Terraform passes a small startup script to the VM. The VM downloads the pinned release asset, verifies it, unpacks it, and runs `ctf_setup.sh`.
+That led to two modes. Learners use release mode: a GitHub release ships a setup archive and checksum, Terraform passes a small startup script to the VM, and the VM downloads the pinned release asset, verifies it, unpacks it, and runs `ctf_setup.sh`.
 
-Contributor mode stayed separate. Contributors can still test unmerged local changes by uploading the local setup package with Terraform.
+Contributors use contributor mode. That path uploads the local setup package with Terraform so unmerged changes can still be tested before a release exists.
 
 After [PR #89](https://github.com/learntocloud/linux-ctfs/pull/89) merged, we created [`v0.1.0`](https://github.com/learntocloud/linux-ctfs/releases/tag/v0.1.0) and tested the release path on Azure. The release package worked, but the learner experience had a problem: Terraform could print the VM IP before setup had finished.
 
