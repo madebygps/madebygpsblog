@@ -46,7 +46,7 @@ mkfs.ext4 disk.img
 
 The goal was not to reimplement those commands in Python. The goal was to run them from a clearer setup program with consistent error handling.
 
-One small example was the DNS challenge. The old setup touched `/etc/resolv.conf`, which is cloud-managed DNS plumbing on modern Ubuntu images. The new version leaves that file alone and puts the flag in a harmless systemd-resolved drop-in file. Learners still practice DNS discovery, but the VM networking is less fragile.
+One small example came from the DNS challenge. While reviewing the setup during the refactor, we noticed that challenge touched `/etc/resolv.conf`, which is cloud-managed DNS plumbing on modern Ubuntu images. That was not a Bash problem. It was just something the refactor made easier to see. The new version leaves that file alone and puts the flag in a harmless systemd-resolved drop-in file. Learners still practice DNS discovery, but the VM networking is less fragile.
 
 ---
 
@@ -72,15 +72,11 @@ Then we created [`v0.1.1`](https://github.com/learntocloud/linux-ctfs/releases/t
 
 ## What This Means for Learners and Contributors
 
-The current direct benefit for learners is small but real. Learners do not care that the setup is Python now. They care whether the lab is ready, fast, and clear.
+The current direct benefit for learners is small but real. Learners do not care that the setup is Python now. Most of the learner experience already existed before this refactor.
 
-For learners, the benefits are:
+The new learner benefits are:
 
 - Setup is much faster in the tested release path.
-- Terraform waits for setup to finish before handing over the VM connection details.
-- The MOTD and challenge files are ready when learners arrive.
-- Provider READMEs focus on the commands learners need to run.
-- Learners can follow lab updates through release notes instead of reading PRs or maintainer comments.
 - Future learner-facing features should be easier to add, but that is future value, not something I want to oversell today.
 
 For contributors, the benefits are more immediate:
@@ -106,3 +102,5 @@ The refactor started because I wanted to practice an idea from a book. It ended 
 That is usually how useful refactors go. They are rarely only about code shape.
 
 Bash is still the right tool for bootstrapping a VM. Python is the better tool once that bootstrap becomes an application. `subprocess` is the bridge between those two jobs.
+
+And thanks to the manual testing, I got to practice my shell skills.
