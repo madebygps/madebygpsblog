@@ -5,19 +5,47 @@ pubDate: 2026-05-27
 tags: ["python", "learntocloud"]
 ---
 
-I was reading [*Effective Python*](https://effectivepython.com/), chapter 9, item 67: "Use `subprocess` to manage child processes." I learn best by applying ideas to real code, and luckily I maintain [Learn to Cloud](https://learntocloud.guide), which includes a [Linux CTF](https://github.com/learntocloud/linux-ctfs) that had accumulated a lot of Bash. I already knew I wanted to refactor that setup to Python, so the timing was perfect.
+I have been studying a lot of random Python topics lately. One of my favorite books is [*Effective Python*](https://effectivepython.com/), because it's structured in a way where you can read 1 item and immediately apply it. Last night (i love late night studying, hence why the [issue](https://github.com/learntocloud/linux-ctfs/issues/81) that kicked off this work was created at 12:00 AM). 
 
-The Linux CTF is a lab for people learning the Linux command line. You deploy a VM in AWS, Azure, or GCP, SSH into it, and solve eighteen challenges with normal terminal tools. The learner experience is intentionally simple. The setup behind it was not.
+I tackled chapter 9, item 67: "Use `subprocess` to manage child processes." The [`subprocess`](https://docs.python.org/3/library/subprocess.html) module essentially allows you to run commands on your system from within Python. I knew exaclty where I wanted to apply my learning.
 
----
+Luckily I maintain [Learn to Cloud](https://learntocloud.guide), which includes a [Linux CTF](https://github.com/learntocloud/linux-ctfs) that used to use a lot of Bash. It's a lab for people learning the Linux command line. You deploy a VM in AWS, Azure, or GCP, SSH into it, and solve eighteen challenges with terminal tools. The learner experience is intentionally simple.
+
 
 ## The Problem
 
-Before this work, the VM was built by one large file: `ctf_setup.sh`. It installed packages, configured SSH, created users, generated flags, wrote challenge files, created services, managed state, wrote the MOTD, and embedded the whole `verify` command inside a Bash heredoc.
+We created the first version of the lab over a year ago. The setup was a single, monolithic Bash script: `ctf_setup.sh`. It installed packages, configured SSH, created users, generated flags, wrote challenge files, created services, managed state, wrote the MOTD. 
 
-[Issue #81](https://github.com/learntocloud/linux-ctfs/issues/81) started with a question: should we port `ctf_setup.sh` to Python?
 
-The first useful step was not writing Python. It was listing every responsibility the Bash script had taken on, then deciding what should become Python code and what should stay a system command.
+We later added the `verify` command which provides learners with a way to check their progress, list available challenges, get hints, check time, and more. It was an entire command-line interface around 70 lines embedded into the same single Bash script.
+
+Bash is fantastic, but we had just grown the script to where we were forcing it to handle too many responsibilities. If we wanted to make the code more maintainable and scalable, we needed to refactor it.
+
+## Deep understanding first
+
+With the ever growing use of AI in programming, I find it more and more important to force myself to slow down and deeply understand a problem before jumping into a solution. 
+
+I started by analyzing the current code and understand all the responsibilities the Bash script was handling. I ended up creating a  breakdown of the script's functionality.
+
+| Area | Responsibility |
+| --- | --- |
+| Flags | Flag generation and HMAC-SHA256 hashing per challenge |
+| Verification | Verification token generation |
+| System setup | Package installation, SSH config, sysctl, and DNS |
+| Users | User management for `ctf_user`, `flag_user`, and `old_admin` |
+| State | CTF state storage |
+| CLI | The embedded `verify` command, which was 350+ lines of Bash inside a heredoc |
+| Welcome flow | MOTD and welcome message |
+| Readiness | Setup readiness check script |
+| Challenges | 18 individual challenge environments |
+| Completion | Completion certificate generation |
+| Idempotency | Setup completion marker |
+
+## Categorizing the Responsibilities
+
+Like I said before, Bash has its strengths and weaknesses, as does Python. The key is to use the right tool for the right job. So this was an opportunity to review the responsibilities and determine the best way to distribute them as some could be better handled by Python, while others are more appropriate for the shell.
+
+I sorted each responsibility into one of three buckets:
 
 | Category | Responsibilities |
 | --- | --- |
@@ -25,95 +53,111 @@ The first useful step was not writing Python. It was listing every responsibilit
 | Subprocess only | Package installation, user management for `ctf_user`, `flag_user`, and `old_admin`, and challenge 18 filesystem commands |
 | Mixed | OS and SSH config, challenges 4, 6, 10, 11, 12, 14, and 17 |
 
-That table was the real design decision. This was not "replace Bash with Python." It was "use Python for structure, and use subprocess for the Linux commands that still belong in Linux."
-
 ---
 
-## What We Changed
+## First-Boot Setup
 
-[PR #89](https://github.com/learntocloud/linux-ctfs/pull/89) turned `ctf_setup.sh` into a thin bootstrap. It installs `uv`, runs the Python setup package, installs the Python `verify` CLI, cleans the cache, and writes setup markers.
+Another thing I had in mind going into this refactor was a cleaner role for first-boot setup. We were already using it. On AWS and Azure that's cloud-init reading user data or custom data, on GCP it's the startup-script runner. But we had been treating it like a place to dump the entire CTF setup.
 
-The real setup moved into `setup/`. The learner-facing `verify` command moved into `verify/`. Challenge code now lives closer to the challenge it builds. The `verify` command is no longer trapped inside a Bash heredoc.
+In my head, for this lab, first-boot should do one thing: get the VM to a state where the real setup can take over. Install a couple of prerequisites, then hand off. The CTF setup itself, packages, users, flags, challenges, services, MOTD, should not be living inside boot data. It should be something first-boot calls into.
 
-This is where the `subprocess` idea clicked for me. Python became the parent process. It handles structure, paths, state, files, and command orchestration. Linux commands still do Linux work:
+## The Implementation
 
-```bash
-apt-get update
-systemctl daemon-reload
-useradd ctf_user
-mkfs.ext4 disk.img
-```
+In [PR #89](https://github.com/learntocloud/linux-ctfs/pull/89) we did the work.
 
-The goal was not to reimplement those commands in Python. The goal was to run them from a clearer setup program with consistent error handling.
+1. Turned `ctf_setup.sh` into a thin bootstrap. It enables strict shell behavior, checks an idempotency marker under cloud-init's per-instance state directory, installs `uv` so the VM does not depend on system Python, runs the Python setup, installs the `verify` CLI, and only writes the success marker if setup actually finished.
+2. Moved the real setup into a `setup/` Python package, split by responsibility: orchestration, flag generation, system config, state, shared helpers for `subprocess` and systemd, and one file per challenge.
+3. Moved the learner-facing `verify` command into its own `verify/` package using `argparse`, `rich`, and `pyfiglet`. That killed the 350-line Bash heredoc and the `figlet` / `lolcat` dependencies.
 
-One small example came from the DNS challenge. While reviewing the setup during the refactor, we noticed that challenge touched `/etc/resolv.conf`, which is cloud-managed DNS plumbing on modern Ubuntu images. That was not a Bash problem. It was just something the refactor made easier to see. The new version leaves that file alone and puts the flag in a harmless systemd-resolved drop-in file. Learners still practice DNS discovery, but the VM networking is less fragile.
+The refactor also gave me an opportunity to revisit every challenge. Each one moved into its own file under `setup/challenges/`, which made it much easier to read what a challenge actually does without scrolling past seventeen others. Most were straightforward ports of the existing Bash. A few were worth a second look:
+
+- **Challenge 9 (DNS)** used to mutate `/etc/resolv.conf`. On Ubuntu cloud images that file is owned by `systemd-resolved` and overwriting it fights the platform. The new version drops a config file under `/etc/systemd/resolved.conf.d/` and points learners at `resolvectl` instead.
+- **Challenge 18 (filesystems)** stayed shell-driven on purpose. `mkfs.ext4`, `mount`, and `umount` have no clean stdlib equivalent, so Python just orchestrates them through `subprocess`.
+- **User-management challenges** (around `ctf_user`, `flag_user`, and `old_admin`) kept shelling out to `useradd`, `chpasswd`, and `usermod` for the same reason.
+
+This is where `subprocess` shines. Python became the parent process. It handles structure, paths, state, files, and command orchestration. Linux commands still do Linux work, because there is no clean stdlib replacement for them. A small `run()` helper in `helpers.py` is the bridge:
 
 ---
 
 ## What Testing Exposed
 
-The refactor changed how the lab had to be shipped. Before, Terraform could download one file from GitHub. After the refactor, the VM needed `ctf_setup.sh`, `setup/`, and `verify/` together. Testing exposed that we were trying to use one deployment path for two different jobs.
+I then tested the new implementation. Like every refactor, nothing is perfect on the first try.
 
-Putting all of that into cloud first-boot data was the wrong shape. AWS user data is limited to 16 KB before base64 encoding. Azure custom data is limited to 64 KB. GCP gives more room, but metadata still should not become a package transport system.
+The first thing I had forgotten was how the lab actually got onto the VM. The old Terraform code just pulled a single `ctf_setup.sh` from GitHub and handed it to first-boot. That worked when the setup was one file. After the refactor, the VM needed `ctf_setup.sh`, `setup/`, and `verify/` together, and there was no longer a single file to fetch.
 
-That led to two modes. Learners use release mode: a GitHub release ships a setup archive and checksum, Terraform passes a small startup script to the VM, and the VM downloads the pinned release asset, verifies it, unpacks it, and runs `ctf_setup.sh`.
+So when I deployed the new setup, it was still loading the old `ctf_setup.sh`. This lead to the next issue: how do we make the `setup/` and `verify/` directories available to the VM?
 
-Contributors use contributor mode. That path uploads the local setup package with Terraform so unmerged changes can still be tested before a release exists.
+The thin bootstrap script itself fits in first-boot data without trouble. The package does not. First-boot data was never meant to be a package transport, and on AWS it would not even fit (user data is capped at 16 KB before base64 encoding). So the bootstrap had to stay in first-boot data, and the package had to get to the VM some other way.
 
-After [PR #89](https://github.com/learntocloud/linux-ctfs/pull/89) merged, we created [`v0.1.0`](https://github.com/learntocloud/linux-ctfs/releases/tag/v0.1.0) and tested the release path on Azure. The release package worked, but the learner experience had a problem: Terraform could print the VM IP before setup had finished.
+After some researching, I also considered baking everything into a custom VM image per provider so first-boot would have almost nothing to do. I logged that idea as one of the approaches in [issue #83](https://github.com/learntocloud/linux-ctfs/issues/83) to look at later. For now it was too much work for a refactor that was already touching enough things, and we can always iterate later. So we went with the simpler short-term fix: two modes, gated by a Terraform variable (`use_local_setup`).
 
-That meant a learner could SSH in too early and see an incomplete lab. The setup might still be running, the MOTD might not be ready, and the challenge files might not exist yet.
+1. **Release mode** deploys from a versioned GitHub release. A GitHub Actions workflow (`.github/workflows/release-setup.yml`) builds a `linux-ctfs-setup.tar.gz` plus a sha256 checksum on every tagged release. Terraform then injects a small inline bootstrap into the cloud's first-boot data (AWS user data, Azure custom data, GCP startup script). That inline script is not `ctf_setup.sh`. Its only job is to download the tarball for the pinned `setup_release_tag`, verify the checksum, unpack it, and then run the `ctf_setup.sh` that lives inside the tarball. This keeps it simple for learners, because all they have to do is `terraform init` and `terraform apply`. Nothing local has to exist on their machine beyond the Terraform config, but the repo still contains all the code, so it is also a learning opportunity if they want to explore the codebase.
+2. **Contributor mode** deploys entirely from local files. Terraform uploads the local `ctf_setup.sh`, `setup/`, and `verify/` over SSH after the VM boots, so unmerged changes can be tested before a release exists. This is ideal for people contributing to the lab. It is opt-in via the `use_local_setup = true` variable.
 
-We opened [issue #90](https://github.com/learntocloud/linux-ctfs/issues/90) for a better provider-specific readiness design later. For the immediate fix, [PR #91](https://github.com/learntocloud/linux-ctfs/pull/91) added a cross-provider readiness wait. Terraform now waits over SSH until setup success markers exist, and it fails early if setup writes a failure marker.
+Working with releases also gave us a real artifact to point at. Each lab update is now a tagged release, and learners and contributors can read the release notes to understand what changed. No more digging through commits or PRs to figure out what is in a given version of the lab.
 
-Then we created [`v0.1.1`](https://github.com/learntocloud/linux-ctfs/releases/tag/v0.1.1) and tested again. The MOTD showed correctly, and the lab was ready when SSH was useful.
+---
 
-I also ran a small Azure benchmark to compare the old pure-Bash setup against the Python and Bash refactor. I do not want to overstate this part. It was three runs each on Azure, not a full performance study. Still, the result was consistent enough to be useful:
+## Readiness
 
-| Version | Run 1 | Run 2 | Run 3 | Average apply | Average destroy |
-| --- | ---: | ---: | ---: | ---: | ---: |
-| Pure Bash, commit `82fb7b8` | 185s | 180s | 175s | 180s | 109s |
-| Python and Bash refactor | 167s | 154s | 157s | 159s | 110s |
+After [PR #89](https://github.com/learntocloud/linux-ctfs/pull/89) merged, I cut [`v0.1.0`](https://github.com/learntocloud/linux-ctfs/releases/tag/v0.1.0) and tested the release path on Azure. The tarball was fetched, verified, unpacked, and run cleanly. But the learner experience still had a sharp edge: Terraform would print the VM IP as soon as the cloud provider considered the VM created, which was well before `ctf_setup.sh` had actually finished. A learner could SSH in too early and find the MOTD missing, services not running, and challenge files not written yet.
 
-The refactor was about 21 seconds faster on average, roughly 12 percent quicker. The slowest refactor run was still faster than the fastest pure-Bash run. Destroy time stayed basically the same, which makes sense because Terraform was tearing down the same infrastructure either way.
+The clean fix is provider-native: Azure VM Custom Script Extension, AWS SSM Run Command, something equivalent on GCP. Each one has real cost in permissions and infrastructure, and the three providers do not behave the same. I opened [issue #90](https://github.com/learntocloud/linux-ctfs/issues/90) to design that properly later.
 
-Some of that speed may come from better dependency installation and less sprawling setup logic. Some may also come from mechanical differences in how readiness was measured. The takeaway is not "Python is magically faster than Bash." The takeaway is that the refactor made setup a bit faster while making the code much easier to maintain.
+For the immediate fix, [PR #91](https://github.com/learntocloud/linux-ctfs/pull/91) added a cross-provider readiness wait. The Python setup writes a success marker on completion and a failure marker if it blows up. Terraform polls those markers over SSH and only returns the VM connection details once the success marker exists. If the failure marker shows up, it errors out early instead of pretending the lab is ready.
+
+Then I cut [`v0.1.1`](https://github.com/learntocloud/linux-ctfs/releases/tag/v0.1.1) and retested. SSH waited until the lab was actually ready, the MOTD showed up, and the challenges were in place.
+
+I also went through every challenge by hand on the live VM, captured each flag, and confirmed all eighteen worked end to end. Great opportunity to 100% validate and brush up my bash skills.
+
+---
+
+## Testing as a first-class thing
+
+Manual testing did its job, but it also showed me where the test setup itself was weak. Three things came out of that.
+
+### A cleaner CTF testing skill
+
+`.github/skills/ctf-testing/SKILL.md` was the agent-facing instructions for how to test the lab. It had drifted over time and was no longer the first place I'd send an agent who wanted to test a change.
+
+I reworked it down to two modes:
+
+- **Basic test**: deploy on a provider and run the full challenge suite, no reboot.
+- **Full test**: same thing, plus a reboot-validation pass to make sure setup markers, systemd units, and persistence all survive a restart.
+
+The trigger phrases are now boring and obvious, like `Run a basic test on Azure` or `Run a full test on all providers`. The skill keeps mode, provider choice, command, what is being validated, cleanup expectation, and result reporting in one place. I tried it end to end on Azure with `Run a basic test on Azure, the az cli is authenticated, use that subscription` and it deployed, validated all eighteen challenges, exported the certificate, checked tokens and the time-freeze behavior, then cleaned up nine Terraform resources without leaving anything behind.
+
+### Slimmer CONTRIBUTING.md
+
+I also trimmed `CONTRIBUTING.md` down to what a contributor actually needs: local checks, the basic and full cloud test commands, how contributor mode behaves, and short troubleshooting notes. Less prose, more "here is the command, here is what it does."
+
+### The orchestration script is next
+
+The local script that actually runs the cloud tests is still Bash, and it has grown into a lot of state. It handles Terraform calls, provider-specific values, SSH and SCP, retries, timeouts, setup-marker checks, the reboot flow, cleanup, and final reporting. That is a lot of branching for a shell script.
+
+The plan, tracked in [issue #88](https://github.com/learntocloud/linux-ctfs/issues/88), is to keep the VM-side validation script in shell (because that part is literally exercising the learner's command-line experience) and rewrite the local orchestration script in Python so timeouts, cleanup, and failure reporting stop being held together with `trap` and `set -e`. The structure of the test suite itself is tracked separately in [issue #85](https://github.com/learntocloud/linux-ctfs/issues/85), with ideas like `--challenge 10` and `--smoke` flags so I do not have to run all eighteen challenges to validate a one-line fix.
 
 ---
 
 ## What This Means for Learners and Contributors
 
-The current direct benefit for learners is small but real. Learners do not care that the setup is Python now. Most of the learner experience already existed before this refactor.
+Learners do not care that the setup is Python now, and most of the experience already existed before this refactor. The wins they actually get are a slightly faster setup on the tested Azure release path, and release notes that double as lab update notes so they have one clear place to see what changed.
 
-The new learner benefits are:
-
-- Setup is somewhat faster in the tested Azure release path.
-- Release notes can now act as lab update notes, so learners have a clearer place to see what changed.
-- Future learner-facing features should be easier to add, but that is future value, not something I want to oversell today.
-
-For contributors, the benefits are more immediate:
+For contributors the wins are more immediate:
 
 - Setup code is split by responsibility instead of living in one large Bash file.
 - The `verify` command is a Python package instead of an embedded heredoc.
 - Challenge code is easier to find, review, and change.
-- Release mode uses versioned setup assets with checksums.
-- Contributor mode still supports local, unmerged testing.
-- The CTF testing skill and scripts now have a clearer role.
-- Longer-term readiness work is tracked in issue #90 instead of being buried inside the refactor.
+- Release mode uses versioned setup assets with checksums, contributor mode still supports local unmerged testing.
+- Longer-term readiness work is tracked in [issue #90](https://github.com/learntocloud/linux-ctfs/issues/90) instead of being buried inside the refactor.
 
-That is a cleaner maintenance loop. A contributor can change a challenge, test it locally through contributor mode, open a PR, merge it, publish a release, and let learners deploy that release.
-
-We are also treating each lab update as a release now, which is great because it gives learners a clearer way to understand what changed. Instead of needing to follow pull requests, issue comments, or maintainer notes, they can look at release notes as lab updates. That also gives contributors a better boundary for shipping changes: merge the work, publish the release, test the release path, and document what changed for learners.
+A contributor can now change a challenge, test it locally through contributor mode, open a PR, merge it, publish a release, and let learners deploy that release.
 
 ---
 
 ## What I Learned
 
-Manual testing still mattered. After the readiness fix, we captured and verified all eighteen flags against a live lab. That found small shell-output issues, like recursive `grep` including filenames when `verify` needed only the flag value. It also confirmed the important part: the lab worked end to end for a real person in a shell.
-
-The refactor started because I wanted to practice an idea from a book. It ended up touching release packaging, cloud-init, Terraform behavior, first-boot data limits, contributor testing, learner docs, and manual validation.
-
-That is usually how useful refactors go. They are rarely only about code shape.
+The refactor started because I wanted to practice an idea from a book. It ended up touching release packaging, cloud-init, Terraform behavior, first-boot data limits, contributor testing, learner docs, and manual validation. That is usually how useful refactors go. They are rarely only about code shape.
 
 Bash is still the right tool for bootstrapping a VM. Python is the better tool once that bootstrap becomes an application. `subprocess` is the bridge between those two jobs.
 
