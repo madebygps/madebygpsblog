@@ -2,7 +2,7 @@
 title: "Refactoring Bash to Python for a Linux CTF"
 description: "How an Effective Python chapter turned into a real refactor of the Learn to Cloud Linux CTF setup."
 pubDate: 2026-05-27
-tags: ["python", "ctf"]
+tags: ["python", "learntocloud"]
 ---
 
 I was reading [*Effective Python*](https://effectivepython.com/), chapter 9, item 67: "Use `subprocess` to manage child processes." I learn best by applying ideas to real code, and luckily I maintain [Learn to Cloud](https://learntocloud.guide), which includes a [Linux CTF](https://github.com/learntocloud/linux-ctfs) that had accumulated a lot of Bash. I already knew I wanted to refactor that setup to Python, so the timing was perfect.
