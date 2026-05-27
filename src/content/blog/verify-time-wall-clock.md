@@ -2,7 +2,7 @@
 title: "verify time and the wall clock"
 description: "What the CTF timer actually measures, a small but important fix I shipped, and why I decided not to change the underlying model."
 pubDate: 2026-05-26
-tags: ["linux", "ctf"]
+tags: ["linux", "learntocloud"]
 ---
 
 The [Learn to Cloud Phase 1 CTF](https://github.com/learntocloud/linux-ctfs) is a lab I built to give learners a real, hands-on way to test their Linux command line skills after working through the Phase 1 content at [learntocloud.guide](https://learntocloud.guide). The idea is simple: eighteen progressive challenges, all solved with nothing but a terminal and the knowledge you built over days or weeks of study.
