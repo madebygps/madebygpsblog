@@ -2,7 +2,7 @@
 title: "Refactoring Bash to Python for a Linux CTF"
 description: "How an Effective Python chapter turned into a real refactor of the Learn to Cloud Linux CTF setup."
 pubDate: 2026-05-27
-tags: ["python", "ctf"]
+tags: ["python", "learntocloud"]
 ---
 
 I was reading [*Effective Python*](https://effectivepython.com/), chapter 9, item 67: "Use `subprocess` to manage child processes." I learn best by applying ideas to real code, and luckily I maintain [Learn to Cloud](https://learntocloud.guide), which includes a [Linux CTF](https://github.com/learntocloud/linux-ctfs) that had accumulated a lot of Bash. I already knew I wanted to refactor that setup to Python, so the timing was perfect.
@@ -66,7 +66,18 @@ That meant a learner could SSH in too early and see an incomplete lab. The setup
 
 We opened [issue #90](https://github.com/learntocloud/linux-ctfs/issues/90) for a better provider-specific readiness design later. For the immediate fix, [PR #91](https://github.com/learntocloud/linux-ctfs/pull/91) added a cross-provider readiness wait. Terraform now waits over SSH until setup success markers exist, and it fails early if setup writes a failure marker.
 
-Then we created [`v0.1.1`](https://github.com/learntocloud/linux-ctfs/releases/tag/v0.1.1) and tested again. The MOTD showed correctly, the lab was ready when SSH was useful, and setup finished in about 1 minute and 48 seconds on Azure.
+Then we created [`v0.1.1`](https://github.com/learntocloud/linux-ctfs/releases/tag/v0.1.1) and tested again. The MOTD showed correctly, and the lab was ready when SSH was useful.
+
+I also ran a small Azure benchmark to compare the old pure-Bash setup against the Python and Bash refactor. I do not want to overstate this part. It was three runs each on Azure, not a full performance study. Still, the result was consistent enough to be useful:
+
+| Version | Run 1 | Run 2 | Run 3 | Average apply | Average destroy |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Pure Bash, commit `82fb7b8` | 185s | 180s | 175s | 180s | 109s |
+| Python and Bash refactor | 167s | 154s | 157s | 159s | 110s |
+
+The refactor was about 21 seconds faster on average, roughly 12 percent quicker. The slowest refactor run was still faster than the fastest pure-Bash run. Destroy time stayed basically the same, which makes sense because Terraform was tearing down the same infrastructure either way.
+
+Some of that speed may come from better dependency installation and less sprawling setup logic. Some may also come from mechanical differences in how readiness was measured. The takeaway is not "Python is magically faster than Bash." The takeaway is that the refactor made setup a bit faster while making the code much easier to maintain.
 
 ---
 
@@ -76,7 +87,8 @@ The current direct benefit for learners is small but real. Learners do not care 
 
 The new learner benefits are:
 
-- Setup is much faster in the tested release path.
+- Setup is somewhat faster in the tested Azure release path.
+- Release notes can now act as lab update notes, so learners have a clearer place to see what changed.
 - Future learner-facing features should be easier to add, but that is future value, not something I want to oversell today.
 
 For contributors, the benefits are more immediate:
@@ -90,6 +102,8 @@ For contributors, the benefits are more immediate:
 - Longer-term readiness work is tracked in issue #90 instead of being buried inside the refactor.
 
 That is a cleaner maintenance loop. A contributor can change a challenge, test it locally through contributor mode, open a PR, merge it, publish a release, and let learners deploy that release.
+
+We are also treating each lab update as a release now, which is great because it gives learners a clearer way to understand what changed. Instead of needing to follow pull requests, issue comments, or maintainer notes, they can look at release notes as lab updates. That also gives contributors a better boundary for shipping changes: merge the work, publish the release, test the release path, and document what changed for learners.
 
 ---
 
