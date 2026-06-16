@@ -1,0 +1,43 @@
+---
+import { tagSlug } from '../lib/tags';
+import { formatDate, tagPath, useTranslations, type Lang } from '../i18n/utils';
+import type { BlogPost } from '../i18n/posts';
+
+type Props = {
+  lang: Lang;
+  post: BlogPost;
+};
+
+const { lang, post } = Astro.props;
+const t = useTranslations(lang);
+---
+
+<article>
+  <p class="post-meta">{formatDate(post.data.pubDate, lang)}</p>
+  {
+    post.data.canonicalUrl && (
+      <p class="post-meta">
+        {t('post.originallyPublished')} <a href={post.data.canonicalUrl}>Substack</a>
+      </p>
+    )
+  }
+  <h1>{post.data.title}</h1>
+  <p class="lede">{post.data.description}</p>
+  {
+    post.data.featureImage && (
+      <img class="feature-image" src={post.data.featureImage} alt="" loading="lazy" />
+    )
+  }
+  <slot />
+  {
+    post.data.tags.length > 0 && (
+      <div class="tags" aria-label={t('tag.tags')}>
+        {post.data.tags.map((tag) => (
+          <a class="tag" href={tagPath(lang, tagSlug(tag))}>
+            {tag}
+          </a>
+        ))}
+      </div>
+    )
+  }
+</article>

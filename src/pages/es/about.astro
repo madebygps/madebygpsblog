@@ -1,0 +1,14 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import AboutContentEs from '../../components/AboutContentEs.astro';
+import { aboutPath } from '../../i18n/utils';
+---
+
+<BaseLayout
+  title="Acerca de"
+  description="Defensora de desarrolladores de Python en Microsoft, enfocada en IA, Azure y la educación de desarrolladores."
+  lang="es"
+  altLangUrl={aboutPath('en')}
+>
+  <AboutContentEs />
+</BaseLayout>
