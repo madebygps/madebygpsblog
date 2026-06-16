@@ -1,0 +1,14 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import AboutContentEs from '../../components/AboutContentEs.astro';
+import { homePath } from '../../i18n/utils';
+---
+
+<BaseLayout
+  title="madebygps"
+  description="Python Cloud Advocate en Microsoft, enfocada en IA, Azure y la educación de desarrolladores."
+  lang="es"
+  altLangUrl={homePath('en')}
+>
+  <AboutContentEs />
+</BaseLayout>

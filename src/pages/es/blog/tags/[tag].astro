@@ -1,12 +1,12 @@
 ---
-import BaseLayout from '../../../layouts/BaseLayout.astro';
-import PostList from '../../../components/PostList.astro';
-import { getDisplayPosts, type BlogPost } from '../../../i18n/posts';
-import { tagSlug } from '../../../lib/tags';
-import { useTranslations, blogPath } from '../../../i18n/utils';
+import BaseLayout from '../../../../layouts/BaseLayout.astro';
+import PostList from '../../../../components/PostList.astro';
+import { getDisplayPosts, type BlogPost } from '../../../../i18n/posts';
+import { tagSlug } from '../../../../lib/tags';
+import { useTranslations, blogPath } from '../../../../i18n/utils';
 
 export async function getStaticPaths() {
-  const posts = await getDisplayPosts('en');
+  const posts = await getDisplayPosts('es');
   const tagMap = new Map<string, { tag: string; posts: BlogPost[] }>();
 
   posts.forEach((post) => {
@@ -25,18 +25,20 @@ export async function getStaticPaths() {
 }
 
 const { tag, posts } = Astro.props;
-const lang = 'en' as const;
+const lang = 'es' as const;
 const t = useTranslations(lang);
 ---
 
 <BaseLayout
-  title={`${tag} posts`}
-  description={`Posts tagged ${tag}.`}
+  title={`${tag}`}
+  description={`Entradas con la etiqueta ${tag}.`}
   lang={lang}
-  altLangUrl={blogPath('es')}
+  altLangUrl={blogPath('en')}
 >
   <p class="post-meta"><a href={blogPath(lang)}>{t('blog.allPosts')}</a></p>
   <h1>{tag}</h1>
-  <p class="lede">{posts.length} {posts.length === 1 ? 'post' : 'posts'} tagged {tag}.</p>
+  <p class="lede">
+    {posts.length} {posts.length === 1 ? 'entrada' : 'entradas'} con la etiqueta {tag}.
+  </p>
   <PostList lang={lang} posts={posts} />
 </BaseLayout>

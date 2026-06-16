@@ -1,19 +1,44 @@
 ---
+import { useTranslations, type Lang, homePath, blogPath, aboutPath } from '../i18n/utils';
+import { defaultLang } from '../i18n/ui';
+
 type Props = {
   title: string;
   description?: string;
+  lang?: Lang;
+  altLangUrl?: string;
 };
 
-const { title, description = 'A minimal Astro blog hosted on Azure Static Web Apps.' } = Astro.props;
+const { title, lang = defaultLang } = Astro.props;
+const t = useTranslations(lang);
+const description = Astro.props.description ?? t('site.description');
+const otherLang: Lang = lang === 'en' ? 'es' : 'en';
+const altLangUrl = Astro.props.altLangUrl ?? homePath(otherLang);
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang={lang}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
     <title>{title}</title>
+    {
+      Astro.site && (
+        <>
+          <link
+            rel="alternate"
+            hreflang={lang}
+            href={new URL(Astro.url.pathname, Astro.site).href}
+          />
+          <link
+            rel="alternate"
+            hreflang={otherLang}
+            href={new URL(altLangUrl, Astro.site).href}
+          />
+        </>
+      )
+    }
     <style is:global>
       :root {
         color-scheme: light;
@@ -94,6 +119,32 @@ const { title, description = 'A minimal Astro blog hosted on Azure Static Web Ap
 
       .social-links a {
         color: var(--muted);
+      }
+
+      .lang-switch {
+        align-items: center;
+        border-left: 1px solid var(--border);
+        display: flex;
+        gap: 0.5rem;
+        padding-left: 0.85rem;
+      }
+
+      .lang-switch a {
+        color: var(--muted);
+        font-size: 0.85rem;
+        font-weight: 700;
+        text-decoration: none;
+      }
+
+      .lang-switch a:hover,
+      .lang-switch a:focus-visible {
+        color: var(--accent);
+      }
+
+      .lang-switch span[aria-current] {
+        color: var(--text);
+        font-size: 0.85rem;
+        font-weight: 800;
       }
 
       main {
@@ -464,15 +515,19 @@ const { title, description = 'A minimal Astro blog hosted on Azure Static Web Ap
   </head>
   <body>
     <header>
-      <nav class="site-nav" aria-label="Main navigation">
-        <a href="/">madebygps</a>
+      <nav class="site-nav" aria-label={t('nav.main')}>
+        <a href={homePath(lang)}>madebygps</a>
         <div class="nav-links">
-          <a href="/blog/">Blog</a>
-          <a href="/about/">About</a>
-          <div class="social-links" aria-label="Social links">
+          <a href={blogPath(lang)}>{t('nav.blog')}</a>
+          <a href={aboutPath(lang)}>{t('nav.about')}</a>
+          <div class="social-links" aria-label={t('nav.social')}>
             <a href="https://x.com/madebygps" target="_blank" rel="me noopener noreferrer">X</a>
             <a href="https://www.linkedin.com/in/madebygps" target="_blank" rel="me noopener noreferrer">LinkedIn</a>
             <a href="https://www.youtube.com/madebygps" target="_blank" rel="me noopener noreferrer">YouTube</a>
+          </div>
+          <div class="lang-switch" aria-label={t('lang.label')}>
+            {lang === 'en' ? <span aria-current="true">EN</span> : <a href={altLangUrl}>EN</a>}
+            {lang === 'es' ? <span aria-current="true">ES</span> : <a href={altLangUrl}>ES</a>}
           </div>
         </div>
       </nav>
@@ -481,7 +536,7 @@ const { title, description = 'A minimal Astro blog hosted on Azure Static Web Ap
       <slot />
     </main>
     <footer>
-      <small>Built with Astro and Azure Static Web Apps.</small>
+      <small>{t('footer.builtWith')}</small>
     </footer>
   </body>
 </html>
