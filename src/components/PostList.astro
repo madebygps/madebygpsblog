@@ -1,0 +1,36 @@
+---
+import { tagSlug } from '../lib/tags';
+import { formatDate, postPath, tagPath, useTranslations, type Lang } from '../i18n/utils';
+import { postSlug, type BlogPost } from '../i18n/posts';
+
+type Props = {
+  lang: Lang;
+  posts: BlogPost[];
+};
+
+const { lang, posts } = Astro.props;
+const t = useTranslations(lang);
+---
+
+<ul class="post-list">
+  {
+    posts.map((post) => (
+      <li class="post-card">
+        <h2>
+          <a href={postPath(post.data.lang, postSlug(post))}>{post.data.title}</a>
+        </h2>
+        <p class="post-meta">{formatDate(post.data.pubDate, lang)}</p>
+        <p>{post.data.description}</p>
+        {post.data.tags.length > 0 && (
+          <div class="tags" aria-label={`${t('tag.tagsFor')} ${post.data.title}`}>
+            {post.data.tags.map((tag) => (
+              <a class="tag" href={tagPath(lang, tagSlug(tag))}>
+                {tag}
+              </a>
+            ))}
+          </div>
+        )}
+      </li>
+    ))
+  }
+</ul>

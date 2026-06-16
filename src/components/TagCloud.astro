@@ -1,0 +1,27 @@
+---
+import { tagSlug } from '../lib/tags';
+import { tagPath, useTranslations, type Lang } from '../i18n/utils';
+
+type Props = {
+  lang: Lang;
+  tags: [string, number][];
+};
+
+const { lang, tags } = Astro.props;
+const t = useTranslations(lang);
+---
+
+{
+  tags.length > 0 && (
+    <nav class="tag-cloud" aria-label={t('blog.browseByTopic')}>
+      {tags.map(([tag, count]) => (
+        <a class="tag" href={tagPath(lang, tagSlug(tag))}>
+          {tag}{' '}
+          <span aria-label={`${count} ${count === 1 ? t('blog.post') : t('blog.posts')}`}>
+            {count}
+          </span>
+        </a>
+      ))}
+    </nav>
+  )
+}

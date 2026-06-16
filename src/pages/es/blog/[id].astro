@@ -1,0 +1,39 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import PostArticle from '../../../components/PostArticle.astro';
+import { postSlug, translationKeyFor } from '../../../i18n/posts';
+import { postPath, blogPath } from '../../../i18n/utils';
+
+export async function getStaticPaths() {
+  const all = await getCollection('blog');
+  const esPosts = all.filter((post) => post.data.lang === 'es');
+
+  return esPosts.map((post) => {
+    const key = translationKeyFor(post);
+    const translated = all.find(
+      (other) => other.data.lang === 'en' && translationKeyFor(other) === key
+    );
+    const altLangUrl = translated ? postPath('en', postSlug(translated)) : blogPath('en');
+
+    return {
+      params: { id: postSlug(post) },
+      props: { post, altLangUrl }
+    };
+  });
+}
+
+const { post, altLangUrl } = Astro.props;
+const { Content } = await render(post);
+---
+
+<BaseLayout
+  title={post.data.title}
+  description={post.data.description}
+  lang="es"
+  altLangUrl={altLangUrl}
+>
+  <PostArticle lang="es" post={post}>
+    <Content />
+  </PostArticle>
+</BaseLayout>

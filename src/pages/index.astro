@@ -1,11 +1,14 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import AboutContent from '../components/AboutContent.astro';
+import { homePath } from '../i18n/utils';
 ---
 
 <BaseLayout
   title="madebygps"
   description="Python Developer Advocate at Microsoft focused on AI, Azure, and developer education."
+  lang="en"
+  altLangUrl={homePath('es')}
 >
   <AboutContent />
 </BaseLayout>

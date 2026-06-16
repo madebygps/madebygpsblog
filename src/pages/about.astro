@@ -1,11 +1,14 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import AboutContent from '../components/AboutContent.astro';
+import { aboutPath } from '../i18n/utils';
 ---
 
 <BaseLayout
   title="About"
   description="Python Developer Advocate at Microsoft focused on AI, Azure, and developer education."
+  lang="en"
+  altLangUrl={aboutPath('es')}
 >
   <AboutContent />
 </BaseLayout>
