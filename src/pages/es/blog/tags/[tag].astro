@@ -35,10 +35,12 @@ const t = useTranslations(lang);
   lang={lang}
   altLangUrl={blogPath('en')}
 >
-  <p class="post-meta"><a href={blogPath(lang)}>{t('blog.allPosts')}</a></p>
-  <h1>{tag}</h1>
-  <p class="lede">
-    {posts.length} {posts.length === 1 ? 'entrada' : 'entradas'} con la etiqueta {tag}.
-  </p>
+  <section class="page-head">
+    <p class="post-meta"><a href={blogPath(lang)}>{t('blog.allPosts')}</a></p>
+    <h1>{tag}</h1>
+    <p class="lede">
+      {posts.length} {posts.length === 1 ? 'entrada' : 'entradas'} con la etiqueta {tag}.
+    </p>
+  </section>
   <PostList lang={lang} posts={posts} />
 </BaseLayout>

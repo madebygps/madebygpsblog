@@ -13,16 +13,18 @@ const t = useTranslations(lang);
 ---
 
 <article>
-  <p class="post-meta">{formatDate(post.data.pubDate, lang)}</p>
-  {
-    post.data.canonicalUrl && (
-      <p class="post-meta">
-        {t('post.originallyPublished')} <a href={post.data.canonicalUrl}>Substack</a>
-      </p>
-    )
-  }
-  <h1>{post.data.title}</h1>
-  <p class="lede">{post.data.description}</p>
+  <header class="page-head">
+    <p class="post-meta">{formatDate(post.data.pubDate, lang)}</p>
+    {
+      post.data.canonicalUrl && (
+        <p class="post-meta">
+          {t('post.originallyPublished')} <a href={post.data.canonicalUrl}>Substack</a>
+        </p>
+      )
+    }
+    <h1>{post.data.title}</h1>
+    <p class="lede">{post.data.description}</p>
+  </header>
   {
     post.data.featureImage && (
       <img class="feature-image" src={post.data.featureImage} alt="" loading="lazy" />
