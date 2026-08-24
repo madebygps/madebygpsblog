@@ -1,23 +1,32 @@
 ---
 title: "L2C Dev Log: Making Verification Alerts Actionable"
-description: "How we audited Learn to Cloud's Azure alerts, improved health checks and smoke testing, and made verification telemetry easier to trust."
+description: "How Azure MCP and canvases helped us audit Learn to Cloud's alerts, improve deployment checks, and redesign verification telemetry."
 pubDate: 2026-08-23
 tags: ["learntocloud", "azure"]
 ---
 
-I want to start sharing more of the day-to-day work that goes into building and maintaining Learn to Cloud. These posts will be less like tutorials and more like development logs: what broke, what we learned, and what changed.
+I got an email alert from Azure Monitor. I could not tell exactly what the error was, so I knew we needed to improve the alert. All I could tell was that it was related to the verification system.
 
-Today started with an email alert from Azure Monitor.
-
-The problem was that I could not tell exactly what the error was. All I knew was that it was related to the verification system. That alone told me the alert needed work. An alert should help you understand what requires attention, not send you searching for the reason it exists.
-
-Using the Azure MCP, we found that the same alert had fired three times in the previous 24 hours. Each firing was related to Azure Functions host or lifecycle events. They produced errors, but none were caused by our application code.
+We used the Azure MCP to figure out that the same alert had fired three times in the previous 24 hours. Each firing was related to Azure Functions host or lifecycle events. They caused errors, but none were caused by our application code.
 
 So we asked a simple question: should those events have caused a Sev1 alert?
 
 No.
 
-## Auditing every alert
+## Using canvases to understand the alerts
+
+We used an Azure Exception Anatomy canvas to break down the alert and the three exceptions behind it. This helped us understand the difference between the alert's Sev1 priority and Application Insights' telemetry severity. It also showed that the exceptions came from Azure Functions host and lifecycle behavior rather than our verification code.
+
+We then used an Alert Audit Workbench canvas to review every alert. This gave us one place to compare each alert's query, severity, purpose, recent production evidence, and our decision to keep, modify, replace, or remove it.
+
+<figure>
+  <img src="/images/l2c-dev-log/alert-audit-workbench.png" alt="Alert Audit Workbench canvas with the original alert groups and their keep or modify decisions" loading="lazy" />
+  <figcaption>Alert Audit Workbench showing the decisions for the original alerts.</figcaption>
+</figure>
+
+The canvases were useful because they turned the raw Azure telemetry and Terraform configuration into something we could inspect and reason about. Azure MCP provided the live production evidence, while the canvases helped us organize and understand it.
+
+## Auditing the original alerts
 
 We used the opportunity to audit all of our alerts. We started with nine. Some were useful, some were redundant, and some needed to be changed.
 
@@ -25,63 +34,118 @@ Our first pass brought the total down to six.
 
 One of the alerts fired only when the verification system was missing an environment variable or another required configuration value. Let's be honest: that should be caught by our CI and deployment process, not discovered later through a production alert.
 
-We added stricter startup validation for required environment variables, including the verification Functions base URL and token scope.
+First, we added stricter startup validation for required environment variables, including the verification Functions base URL and token scope.
 
-The token scope tells Entra, "Issue a token to the API that is intended for the Function app." The API's managed identity and assigned permissions determine whether it is authorized to receive and use that token.
+```python
+if not self.verification_functions.base_url:
+    raise ValueError(
+        "VERIFICATION_FUNCTIONS__BASE_URL must be set "
+        "when ENVIRONMENT=production."
+    )
 
-This startup validation replaced the configuration alert.
+if not self.verification_functions.token_scope:
+    raise ValueError(
+        "VERIFICATION_FUNCTIONS__TOKEN_SCOPE must be set "
+        "when ENVIRONMENT=production."
+    )
+```
 
-## Giving each health check one job
+The base URL tells the API where the Function app is. The token scope tells Entra to issue the API a token intended for the Function app. The API's managed identity and assigned permissions determine whether it is authorized to receive and use that token.
 
-In Terraform, we changed the Container App's startup and readiness probes from `/health` to `/ready`.
+This startup validation, rather than the smoke endpoint, replaced the configuration alert.
 
-These endpoints answer different questions:
+## Improving health and readiness checks
 
-- `/health` tells us the API process is alive and returning a successful response.
-- `/ready` checks that PostgreSQL is reachable and that the database is at the migration version expected by the application.
+In Terraform, we changed the startup probe and readiness probe to `/ready`. Both were previously using `/health`, which only tells us that the API process is alive and returning 200.
 
-The startup and readiness probes now call `/ready`. The liveness probe and Azure Monitor availability test still call `/health`.
+```hcl
+liveness_probe {
+  transport = "HTTP"
+  path      = "/health"
+  port      = 8000
+}
 
-We also created `/internal/smoke/verification`, a smoke test endpoint that runs only the verification submission-preparation code hosted in the Container App. It:
+readiness_probe {
+  transport = "HTTP"
+  path      = "/ready"
+  port      = 8000
+}
 
-- loads the curriculum;
-- selects a requirement;
-- reads the relevant database state;
-- checks phase requirements; and
-- runs the submission-value parsing code.
+startup_probe {
+  transport = "HTTP"
+  path      = "/ready"
+  port      = 8000
+}
+```
 
-It stops before creating a verification attempt or invoking Durable Functions, so it does not run a full verification.
+`/ready` checks that PostgreSQL is reachable and that the database is at the migration version expected by the application. The liveness probe and Azure Monitor availability test still use `/health`.
 
-Our `deploy.yml` workflow now calls `/ready` and the smoke endpoint. It does not call `/health`. The Container Apps liveness probe and Azure Monitor availability test remain responsible for `/health`.
+`deploy.yml` calls `/ready`. It does not call `/health`. Container Apps runs the liveness, readiness, and startup probes automatically.
 
-## Untangling verification alerts
+## Adding the verification smoke test
 
-We then looked more closely at the three alerts focused on the verification system:
+We also created the smoke test endpoint, `/internal/smoke/verification`. This runs only the verification submission-preparation code hosted in the Container App.
+
+It loads the curriculum, selects a requirement, reads the relevant database state, checks phase requirements, and runs the submission-value parsing code. It stops before creating a verification attempt or invoking Durable Functions, so it does not run a full verification.
+
+```python
+ctx = await _check_submission_preconditions(
+    session_maker,
+    user_id=_SMOKE_USER_ID,
+    requirement_slug=requirement.slug,
+)
+
+try:
+    SubmittedValue.from_raw(ctx.requirement, "smoke-test")
+except ValueError:
+    pass
+```
+
+The smoke test is valuable because `/ready` can succeed when PostgreSQL is reachable and migrations are current, while real submission code could still fail because the application and database schema do not work together correctly.
+
+`deploy.yml` calls `/ready` first and then calls the smoke endpoint using a short-lived Entra token obtained through GitHub OIDC.
+
+## Redesigning verification telemetry and alerts
+
+Then we dove further into the three alerts focused on the verification system:
 
 1. Functions HTTP 5xx errors.
 2. Verification system errors.
 3. Other Azure Functions exceptions that did not fall into either of the first two alerts.
 
-As I tried to make sense of them, I realized I could not. There was too much redundancy and overlap without a clear reason for it.
+As I tried to make sense of them, I realized that I could not because there seemed to be redundancy and overlap for no reason.
 
-We dug into the code and found that our telemetry did not correlate outcomes well. A verification attempt's authoritative result is stored in PostgreSQL's `verification_attempts` table, while structured diagnostic telemetry is sent by the Python logger to Application Insights. Connecting the two was harder than it should have been.
+We dug into the code and realized that our telemetry did not correlate outcomes well. The result of a verification attempt is stored in PostgreSQL's `verification_attempts` table, while the Python logger sends structured diagnostic telemetry to Application Insights.
 
-In a series of stacked PRs, we made sure `attempt_id` is included in the structured diagnostic telemetry. We can now correlate that telemetry with the authoritative outcome stored in PostgreSQL.
+In stacked PRs, we made sure `attempt_id` is included in the structured diagnostic telemetry so that it can be correlated with the authoritative outcome saved in PostgreSQL.
 
-We also gave the alerts clearer, outcome-based names and reduced the verification alerts from three to two.
+```python
+attributes={
+    "verification.attempt.id": str(attempt_id),
+}
+```
+
+This means we can now take an error or diagnostic event from Application Insights and connect it to the exact verification attempt and outcome stored in PostgreSQL.
+
+We also created clearer, outcome-based names for the alerts and reduced the verification system alerts from three to two.
+
+<figure>
+  <img src="/images/l2c-dev-log/verification-alert-design.png" alt="Verification alert design canvas comparing the overlapping current flow with the two-path ideal flow" loading="lazy" />
+  <figcaption>The verification alert canvas helped us move from overlapping alerts to two clear, outcome-based paths.</figcaption>
+</figure>
 
 The separate Functions HTTP alert was no longer needed. A system problem that prevents us from returning a normal success or failure result to the learner should either:
 
 - save a `server_error` outcome; or
 - leave the attempt unfinished long enough to trigger the stuck-attempt alert.
 
-Normal learner validation failures are expected outcomes. They should not trigger either system alert.
-
-## Rolling out the replacements safely
+Normal learner validation failures are expected outcomes and should not trigger either system alert.
 
 We first deployed the two new alerts without notifications. This let us observe their behavior while the old alerts remained active.
 
 After confirming that they worked correctly, we merged the cleanup PR. It removed the three old verification alerts and enabled notifications for the two replacements.
+
+## Final alert design
 
 We now have five alerts in total:
 
