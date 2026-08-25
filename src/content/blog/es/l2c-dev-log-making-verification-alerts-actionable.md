@@ -1,11 +1,17 @@
 ---
-title: "L2C Dev Log: Cómo hacer que las alertas de verificación sean útiles"
+title: "Auditoría de alertas de Azure Monitor: Mejorar las alertas de verificación"
 description: "Cómo Azure MCP y los canvases nos ayudaron a auditar las alertas de Learn to Cloud, mejorar los checks de deployment y rediseñar la telemetría de verificación."
 pubDate: 2026-08-23
 tags: ["learntocloud", "azure"]
 lang: "es"
 translationKey: "l2c-dev-log-making-verification-alerts-actionable"
 ---
+
+La API de Learn to Cloud es el límite principal de la aplicación. Atiende las solicitudes de la app, lee y escribe sus datos, y coordina el trabajo detrás de la experiencia del estudiante.
+
+El sistema de verificación es una parte de esa API. Cuando un estudiante envía trabajo para verificarlo, la API prepara el envío e inicia el flujo de verificación. Ese flujo puede llamar a Azure Functions y guarda el resultado del intento de verificación.
+
+Este post se enfoca en las alertas para ese límite de verificación. El post siguiente cubre las alertas del resto de la API: disponibilidad, errores de la API, telemetría y diferencias en el esquema de la base de datos.
 
 Recibí una alerta de Azure Monitor por correo electrónico. No podía saber exactamente cuál había sido el error, así que me di cuenta de que teníamos que mejorar la alerta. Lo único que sabía era que estaba relacionada con el sistema de verificación.
 

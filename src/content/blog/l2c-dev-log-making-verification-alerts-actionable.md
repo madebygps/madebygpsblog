@@ -1,9 +1,15 @@
 ---
-title: "L2C Dev Log: Making Verification Alerts Actionable"
+title: "Azure Monitor Alert Audit: Improving Verification Alerts"
 description: "How Azure MCP and canvases helped us audit Learn to Cloud's alerts, improve deployment checks, and redesign verification telemetry."
 pubDate: 2026-08-23
 tags: ["learntocloud", "azure"]
 ---
+
+Learn to Cloud's API is the main application boundary. It serves the app's requests, reads and writes its data, and coordinates the work behind the learner experience.
+
+The verification system is one part of that API. When a learner submits work for verification, the API prepares the submission and starts the verification flow. That flow can call Azure Functions and records the outcome of the verification attempt.
+
+This post focuses on alerts for that verification boundary. The follow-up post covers the alerts for the rest of the API: availability, API errors, telemetry, and database schema drift.
 
 I got an email alert from Azure Monitor. I could not tell exactly what the error was, so I knew we needed to improve the alert. All I could tell was that it was related to the verification system.
 
