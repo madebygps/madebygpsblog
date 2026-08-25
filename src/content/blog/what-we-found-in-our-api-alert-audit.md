@@ -73,9 +73,50 @@ GitHub's [AI credits and model pricing](https://docs.github.com/en/copilot/refer
 
 [PR #770](https://github.com/learntocloud/learn-to-cloud-app/pull/770) added the Container App revision to API telemetry through an OpenTelemetry Resource. Now, when an error happens, we can see the revision it came from.
 
+```python
+attributes = {
+    "service.name": os.getenv("OTEL_SERVICE_NAME") or APP_LOGGER_NAMESPACE,
+}
+
+if revision := os.getenv("CONTAINER_APP_REVISION"):
+    attributes["service.version"] = revision
+
+instance_id = os.getenv("CONTAINER_APP_REPLICA_NAME") or os.getenv(
+    "WEBSITE_INSTANCE_ID"
+)
+if instance_id:
+    attributes["service.instance.id"] = instance_id
+```
+
 We also moved the `global_exception_handler` to FastAPI's `@app.exception_handler` decorator. This is the catch-all handler for errors that are not handled anywhere else.
 
+```python
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+    logger.exception(
+        "unhandled.exception",
+        extra={
+            "exc_type": type(exc).__name__,
+            "path": request.url.path,
+            "method": request.method,
+        },
+    )
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "An unexpected error occurred. Please try again."},
+    )
+```
+
 That gave us a clear `unhandled.exception` signal to alert on. We added a separate telemetry-pipeline alert for failures while setting up or exporting telemetry, too.
+
+The alert queries the exact signal from the exception boundary instead of trying to infer application failures from every 5xx response:
+
+```hcl
+exceptions
+| where cloud_RoleName == "learn-to-cloud-api"
+| where outerMessage == "unhandled.exception"
+| summarize CrashCount = count() by bin(timestamp, 5m)
+```
 
 We added a runbook for responding to these alerts and tests for the alert contracts. The contract tests verify not only that telemetry exists, but that its fields match what the alert queries expect.
 
@@ -97,8 +138,27 @@ If telemetry has a problem, the API should keep working. We still need logs in t
 
 [PR #773](https://github.com/learntocloud/learn-to-cloud-app/pull/773) fixes this. It keeps the API available while making telemetry failures visible.
 
+```python
+else:
+    logger.error(
+        "telemetry.configure.failed",
+        extra={"reason": "telemetry_destination_missing"},
+    )
+    return
+except Exception:
+    logger.exception("telemetry.configure.failed")
+    return
+```
+
 While working on that change, we found another problem. If the Azure Monitor connection string was missing, our logging configuration could fall back to plain text. That would make the telemetry-pipeline alert unreliable because it could not query the same fields everywhere.
 
 PR #773 removes that conditional behavior. Logs are now always JSON, both locally and in Azure Container Apps.
+
+```python
+console = logging.StreamHandler(sys.stdout)
+console.set_name(_APP_HANDLER_NAME)
+console.setFormatter(_json_formatter())
+root.addHandler(console)
+```
 
 This work left us with fewer alerts, but more importantly, alerts we can explain, test, and act on.

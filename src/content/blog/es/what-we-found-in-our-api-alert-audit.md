@@ -75,9 +75,50 @@ La documentación de GitHub sobre [créditos de IA y precios de modelos](https:/
 
 [PR #770](https://github.com/learntocloud/learn-to-cloud-app/pull/770) agregó la revisión de Container Apps a la telemetría de la API mediante un OpenTelemetry Resource. Ahora, cuando ocurre un error, podemos ver de qué revisión vino.
 
+```python
+attributes = {
+    "service.name": os.getenv("OTEL_SERVICE_NAME") or APP_LOGGER_NAMESPACE,
+}
+
+if revision := os.getenv("CONTAINER_APP_REVISION"):
+    attributes["service.version"] = revision
+
+instance_id = os.getenv("CONTAINER_APP_REPLICA_NAME") or os.getenv(
+    "WEBSITE_INSTANCE_ID"
+)
+if instance_id:
+    attributes["service.instance.id"] = instance_id
+```
+
 También movimos `global_exception_handler` al decorador `@app.exception_handler` de FastAPI. Este es el handler general para errores que no se manejan en ningún otro lugar.
 
+```python
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+    logger.exception(
+        "unhandled.exception",
+        extra={
+            "exc_type": type(exc).__name__,
+            "path": request.url.path,
+            "method": request.method,
+        },
+    )
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "An unexpected error occurred. Please try again."},
+    )
+```
+
 Eso nos dio una señal clara de `unhandled.exception` sobre la que alertar. También agregamos una alerta separada para el pipeline de telemetría que cubre fallas al configurarla o exportarla.
+
+La alerta consulta la señal exacta del límite de excepciones en lugar de intentar inferir fallas de la aplicación a partir de cada respuesta 5xx:
+
+```hcl
+exceptions
+| where cloud_RoleName == "learn-to-cloud-api"
+| where outerMessage == "unhandled.exception"
+| summarize CrashCount = count() by bin(timestamp, 5m)
+```
 
 Agregamos un runbook para responder a estas alertas y pruebas para los contratos de alerta. Las pruebas de contrato verifican no solo que exista telemetría, sino que sus campos coincidan con lo que esperan las consultas de alerta.
 
@@ -99,8 +140,27 @@ Si hay un problema con la telemetría, la API debe seguir funcionando. Todavía 
 
 [PR #773](https://github.com/learntocloud/learn-to-cloud-app/pull/773) corrige esto. Mantiene disponible la API mientras hace visibles las fallas de telemetría.
 
+```python
+else:
+    logger.error(
+        "telemetry.configure.failed",
+        extra={"reason": "telemetry_destination_missing"},
+    )
+    return
+except Exception:
+    logger.exception("telemetry.configure.failed")
+    return
+```
+
 Mientras trabajábamos en ese cambio, encontramos otro problema. Si faltaba el connection string de Azure Monitor, nuestra configuración de logging podía volver a texto plano. Eso haría que la alerta del pipeline de telemetría no fuera confiable, porque no podría consultar los mismos campos en todas partes.
 
 PR #773 elimina ese comportamiento condicional. Los logs ahora siempre son JSON, tanto localmente como en Azure Container Apps.
+
+```python
+console = logging.StreamHandler(sys.stdout)
+console.set_name(_APP_HANDLER_NAME)
+console.setFormatter(_json_formatter())
+root.addHandler(console)
+```
 
 Este trabajo nos dejó con menos alertas, pero más importante aún, con alertas que podemos explicar, probar y usar.
