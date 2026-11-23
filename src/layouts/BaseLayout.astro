@@ -8,9 +8,10 @@ type Props = {
   lang?: Lang;
   altLangUrl?: string;
   bare?: boolean;
+  wide?: boolean;
 };
 
-const { title, lang = defaultLang, bare = false } = Astro.props;
+const { title, lang = defaultLang, bare = false, wide = false } = Astro.props;
 const t = useTranslations(lang);
 const description = Astro.props.description ?? t('site.description');
 const otherLang: Lang = lang === 'en' ? 'es' : 'en';
@@ -43,17 +44,34 @@ const altLangUrl = Astro.props.altLangUrl ?? homePath(otherLang);
     <style is:global>
       :root {
         color-scheme: light;
-        --background: #e9e6de;
-        --surface: #f4f2ea;
-        --surface-muted: #dedbd1;
-        --text: #1d1c19;
-        --muted: #5f5c54;
-        --accent: #7b3028;
-        --accent-strong: #5e231e;
-        --border: #bab6ab;
-        --measure: 40rem;
+        --background: #faf8f4;
+        --surface: #f0ece5;
+        --surface-muted: #e8e2d8;
+        --text: #292724;
+        --muted: #6b625a;
+        --accent: #9b4933;
+        --accent-strong: #753522;
+        --border: #ddd5ca;
+        --shelf-wood: #8a6a4a;
+        --spine-0-bg: #7b3028;
+        --spine-0-fg: #f4f2ea;
+        --spine-1-bg: #2f3e46;
+        --spine-1-fg: #f4f2ea;
+        --spine-2-bg: #d8c9a3;
+        --spine-2-fg: #1d1c19;
+        --spine-3-bg: #3e5a49;
+        --spine-3-fg: #f4f2ea;
+        --spine-4-bg: #1d1c19;
+        --spine-4-fg: #e9e6de;
+        --spine-5-bg: #c2873a;
+        --spine-5-fg: #1d1c19;
+        --measure: 44rem;
+        --shell: 52rem;
+        --reading: 39rem;
+        --sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        --serif: Georgia, "Times New Roman", serif;
         --mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
-        font-family: Georgia, "Times New Roman", serif;
+        font-family: var(--sans);
       }
 
       * {
@@ -63,8 +81,8 @@ const altLangUrl = Astro.props.altLangUrl ?? homePath(otherLang);
       body {
         background: var(--background);
         color: var(--text);
-        font-size: 1.0625rem;
-        line-height: 1.7;
+        font-size: 1rem;
+        line-height: 1.65;
         margin: 0;
       }
 
@@ -100,18 +118,40 @@ const altLangUrl = Astro.props.altLangUrl ?? homePath(otherLang);
       }
 
       body > header {
-        padding: 2.25rem 0 0;
+        padding: 1.75rem 0 1.25rem;
+        width: min(100% - 2.5rem, var(--shell));
       }
 
       body > main {
-        padding: 3.5rem 0 5rem;
+        padding: 2.5rem 0 3.5rem;
+      }
+
+      body > main.wide {
+        width: min(100% - 2.5rem, var(--shell));
       }
 
       body > footer {
         border-top: 1px solid var(--border);
         color: var(--muted);
         font-size: 0.85rem;
-        padding: 1.5rem 0 3rem;
+        padding: 1.25rem 0 2rem;
+        width: min(100% - 2.5rem, var(--shell));
+      }
+
+      .footer-links {
+        align-items: baseline;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem 2rem;
+        margin-bottom: 0.75rem;
+      }
+
+      .footer-links .lang-switch {
+        margin-left: auto;
+      }
+
+      body > footer small {
+        font-size: 0.75rem;
       }
 
       .site-nav {
@@ -123,11 +163,10 @@ const altLangUrl = Astro.props.altLangUrl ?? homePath(otherLang);
 
       .site-nav > a {
         color: var(--text);
-        font-family: var(--mono);
-        font-size: 0.8rem;
-        letter-spacing: 0.16em;
+        font-size: 1.05rem;
+        font-weight: 650;
+        letter-spacing: -0.04em;
         text-decoration: none;
-        text-transform: uppercase;
       }
 
       .nav-links,
@@ -145,11 +184,8 @@ const altLangUrl = Astro.props.altLangUrl ?? homePath(otherLang);
 
       .nav-links a,
       .lang-switch span[aria-current] {
-        font-family: var(--mono);
-        font-size: 0.75rem;
-        letter-spacing: 0.1em;
+        font-size: 0.9rem;
         text-decoration: none;
-        text-transform: uppercase;
       }
 
       .nav-links > a {
@@ -165,6 +201,12 @@ const altLangUrl = Astro.props.altLangUrl ?? homePath(otherLang);
         color: var(--text);
       }
 
+      .nav-links a[aria-current="page"] {
+        color: var(--accent);
+        text-decoration: underline;
+        text-underline-offset: 0.4em;
+      }
+
       .site-nav a:hover,
       .site-nav a:focus-visible {
         color: var(--accent);
@@ -178,8 +220,8 @@ const altLangUrl = Astro.props.altLangUrl ?? homePath(otherLang);
 
       h1 {
         font-size: clamp(2rem, 5vw, 2.75rem);
-        font-weight: 400;
-        letter-spacing: -0.01em;
+        font-weight: 600;
+        letter-spacing: -0.04em;
         margin: 0;
       }
 
@@ -201,11 +243,8 @@ const altLangUrl = Astro.props.altLangUrl ?? homePath(otherLang);
 
       .eyebrow {
         color: var(--muted);
-        font-family: var(--mono);
-        font-size: 0.72rem;
-        letter-spacing: 0.18em;
-        margin: 0 0 1.25rem;
-        text-transform: uppercase;
+        font-size: 0.8rem;
+        margin: 0 0 0.75rem;
       }
 
       .lede {
@@ -215,15 +254,12 @@ const altLangUrl = Astro.props.altLangUrl ?? homePath(otherLang);
       }
 
       .page-head {
-        border-bottom: 1px solid var(--border);
-        margin: 0 0 3rem;
-        padding: 0 0 2.5rem;
-        text-align: center;
+        margin: 0 0 2rem;
+        text-align: left;
       }
 
       .page-head .lede {
-        margin-inline: auto;
-        max-width: 34rem;
+        max-width: 38rem;
       }
 
       .page-body p:last-child,
@@ -232,9 +268,7 @@ const altLangUrl = Astro.props.altLangUrl ?? homePath(otherLang);
       }
 
       .page-section {
-        border-top: 1px solid var(--border);
-        margin-top: 3rem;
-        padding-top: 2.5rem;
+        margin-top: 2.5rem;
       }
 
       .page-section h2 {
@@ -245,8 +279,8 @@ const altLangUrl = Astro.props.altLangUrl ?? homePath(otherLang);
         display: flex;
         flex-wrap: wrap;
         gap: 0.35rem 1.25rem;
-        justify-content: center;
-        margin: 1.75rem 0 0;
+        justify-content: flex-start;
+        margin: 1.25rem 0 0;
       }
 
       .tags {
@@ -258,9 +292,7 @@ const altLangUrl = Astro.props.altLangUrl ?? homePath(otherLang);
 
       .tag {
         color: var(--muted);
-        font-family: var(--mono);
-        font-size: 0.72rem;
-        letter-spacing: 0.06em;
+        font-size: 0.8rem;
         text-decoration: none;
       }
 
@@ -278,19 +310,16 @@ const altLangUrl = Astro.props.altLangUrl ?? homePath(otherLang);
       }
 
       .post-group + .post-group {
-        margin-top: 3.5rem;
+        margin-top: 2rem;
       }
 
       .year-label {
-        border-bottom: 1px solid var(--border);
-        color: var(--text);
-        font-family: var(--mono);
-        font-size: 0.75rem;
-        font-weight: 400;
-        letter-spacing: 0.22em;
+        color: var(--muted);
+        font-size: 0.8rem;
+        font-weight: 500;
         margin: 0;
-        padding: 0 0 0.85rem;
-        text-align: center;
+        padding: 0 0 0.5rem;
+        text-align: left;
       }
 
       .year-count {
@@ -305,8 +334,7 @@ const altLangUrl = Astro.props.altLangUrl ?? homePath(otherLang);
       }
 
       .post-file {
-        border-bottom: 1px solid var(--border);
-        padding: 1.75rem 0;
+        padding: 0.9rem 0;
       }
 
       .post-file-link {
@@ -318,16 +346,14 @@ const altLangUrl = Astro.props.altLangUrl ?? homePath(otherLang);
       .post-date {
         color: var(--muted);
         display: block;
-        font-family: var(--mono);
-        font-size: 0.72rem;
-        letter-spacing: 0.1em;
-        margin: 0 0 0.5rem;
-        text-transform: uppercase;
+        font-size: 0.8rem;
+        margin: 0 0 0.25rem;
       }
 
       .post-title {
         display: block;
-        font-size: 1.25rem;
+        font-size: 1.15rem;
+        font-weight: 550;
         line-height: 1.35;
       }
 
@@ -340,32 +366,86 @@ const altLangUrl = Astro.props.altLangUrl ?? homePath(otherLang);
 
       .post-summary {
         color: var(--muted);
-        font-size: 0.98rem;
-        margin: 0.6rem 0 0;
+        font-size: 0.95rem;
+        margin: 0.35rem 0 0;
       }
 
       .empty-state {
         color: var(--muted);
-        font-family: var(--mono);
-        font-size: 0.85rem;
-        text-align: center;
+        font-size: 0.95rem;
       }
 
       .post-meta {
         color: var(--muted);
-        font-family: var(--mono);
-        font-size: 0.72rem;
-        letter-spacing: 0.12em;
+        font-family: var(--sans);
+        font-size: 0.8rem;
         margin: 0 0 0.75rem;
-        text-transform: uppercase;
       }
 
       .post-meta a {
         color: var(--muted);
       }
 
-      article .lede {
-        margin-top: 1.25rem;
+      .post-article {
+        font-family: var(--serif);
+        font-size: 1.125rem;
+        line-height: 1.8;
+        margin-inline: auto;
+        max-width: var(--reading);
+      }
+
+      .post-article h1,
+      .post-article h2,
+      .post-article h3,
+      .post-article .lede {
+        font-family: var(--sans);
+      }
+
+      .post-article .lede {
+        margin-top: 1rem;
+      }
+
+      .home-intro {
+        margin-bottom: 2.5rem;
+        max-width: 36rem;
+      }
+
+      .section-heading {
+        align-items: baseline;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem 1.5rem;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+      }
+
+      .section-heading h2 {
+        font-size: 1rem;
+        margin: 0;
+      }
+
+      .section-heading a {
+        font-size: 0.85rem;
+      }
+
+      .home-resources {
+        border-top: 1px solid var(--border);
+        display: grid;
+        gap: 1.5rem;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+      }
+
+      .home-resources h2 {
+        font-size: 1rem;
+        margin: 0 0 0.4rem;
+      }
+
+      .home-resources p {
+        color: var(--muted);
+        font-size: 0.9rem;
+        margin: 0;
       }
 
       article pre {
@@ -471,10 +551,8 @@ const altLangUrl = Astro.props.altLangUrl ?? homePath(otherLang);
       }
 
       article .tags {
-        border-top: 1px solid var(--border);
-        justify-content: center;
-        margin-top: 3rem;
-        padding-top: 1.5rem;
+        font-family: var(--sans);
+        margin-top: 2rem;
       }
 
       .links-social {
@@ -568,6 +646,160 @@ const altLangUrl = Astro.props.altLangUrl ?? homePath(otherLang);
         text-transform: uppercase;
       }
 
+      .shelf + .shelf {
+        margin-top: 3rem;
+      }
+
+      .shelf-label {
+        color: var(--muted);
+        font-size: 0.9rem;
+        font-weight: 500;
+        margin: 0 0 1rem;
+      }
+
+      .shelf-row {
+        align-items: flex-end;
+        border-bottom: 0.6rem solid var(--shelf-wood);
+        box-shadow: 0 0.6rem 0.9rem -0.6rem rgb(0 0 0 / 0.35);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.2rem;
+        list-style: none;
+        margin: 0;
+        min-height: 15rem;
+        padding: 1rem 0.75rem 0;
+      }
+
+      .spine {
+        background:
+          linear-gradient(90deg, rgb(0 0 0 / 0.22), transparent 16%, rgb(255 255 255 / 0.08) 50%, transparent 84%, rgb(0 0 0 / 0.26)),
+          var(--spine-bg);
+        border-radius: 2px 2px 0 0;
+        color: var(--spine-fg);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        height: var(--spine-h);
+        overflow: hidden;
+        text-decoration: none;
+        transition: transform 0.25s ease;
+        width: var(--spine-w);
+      }
+
+      .spine:hover,
+      .spine:focus-visible {
+        color: var(--spine-fg);
+        transform: translateY(-0.75rem);
+      }
+
+      .spine-tone-0 { --spine-bg: var(--spine-0-bg); --spine-fg: var(--spine-0-fg); }
+      .spine-tone-1 { --spine-bg: var(--spine-1-bg); --spine-fg: var(--spine-1-fg); }
+      .spine-tone-2 { --spine-bg: var(--spine-2-bg); --spine-fg: var(--spine-2-fg); }
+      .spine-tone-3 { --spine-bg: var(--spine-3-bg); --spine-fg: var(--spine-3-fg); }
+      .spine-tone-4 { --spine-bg: var(--spine-4-bg); --spine-fg: var(--spine-4-fg); }
+      .spine-tone-5 { --spine-bg: var(--spine-5-bg); --spine-fg: var(--spine-5-fg); }
+
+      .spine-number {
+        border-bottom: 1px solid currentColor;
+        flex: none;
+        font-family: var(--mono);
+        font-size: 0.62rem;
+        letter-spacing: 0.06em;
+        padding: 0.45rem 0 0.35rem;
+        text-align: center;
+        width: 100%;
+      }
+
+      .spine-title {
+        flex: 1 1 0;
+        font-family: var(--serif);
+        font-size: 0.85rem;
+        font-weight: 700;
+        line-height: 1.1;
+        min-height: 0;
+        overflow: hidden;
+        padding: 0.6rem 0;
+        text-align: center;
+        writing-mode: vertical-rl;
+      }
+
+      .spine-author {
+        flex: none;
+        font-family: var(--mono);
+        font-size: 0.55rem;
+        letter-spacing: 0.12em;
+        padding: 0 0 0.6rem;
+        text-transform: uppercase;
+        writing-mode: vertical-rl;
+      }
+
+      .shelf-hint,
+      .shelf-credit {
+        color: var(--muted);
+        font-size: 0.85rem;
+      }
+
+      .shelf-hint {
+        margin: 1.25rem 0 0;
+      }
+
+      .shelf-credit {
+        margin: 3rem 0 0;
+      }
+
+      .book-detail {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        color: var(--text);
+        max-height: calc(100dvh - 2rem);
+        max-width: min(100% - 2rem, 26rem);
+        overflow-y: auto;
+        padding: 2rem;
+        position: fixed;
+        text-align: center;
+        width: 100%;
+      }
+
+      .book-detail::backdrop {
+        background: rgb(0 0 0 / 0.55);
+      }
+
+      .book-detail-close {
+        background: transparent;
+        border: 0;
+        color: var(--text);
+        cursor: pointer;
+        font-size: 1.75rem;
+        line-height: 1;
+        padding: 0.5rem;
+        position: absolute;
+        right: 0.5rem;
+        top: 0.5rem;
+      }
+
+      .book-detail-cover img {
+        display: block;
+        height: auto;
+        margin: 0 auto;
+        max-height: min(45dvh, 20rem);
+        max-width: 100%;
+      }
+
+      .book-detail h2 {
+        margin: 1.25rem 0 0.25rem;
+      }
+
+      .book-detail-author {
+        color: var(--muted);
+        margin: 0 0 1rem;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .spine {
+          transition: none;
+        }
+      }
+
       @media (max-width: 640px) {
         body > header {
           padding-top: 1.5rem;
@@ -583,12 +815,18 @@ const altLangUrl = Astro.props.altLangUrl ?? homePath(otherLang);
 
         .nav-links {
           gap: 0.9rem;
-          margin-left: 0;
         }
 
         .page-head {
-          margin-bottom: 2.25rem;
-          padding-bottom: 2rem;
+          margin-bottom: 1.75rem;
+        }
+
+        .home-resources {
+          grid-template-columns: 1fr;
+        }
+
+        .footer-links .lang-switch {
+          margin-left: 0;
         }
       }
     </style>
@@ -621,26 +859,29 @@ const altLangUrl = Astro.props.altLangUrl ?? homePath(otherLang);
       <nav class="site-nav" aria-label={t('nav.main')}>
         <a href={homePath(lang)}>madebygps</a>
         <div class="nav-links">
-          <a href={blogPath(lang)}>{t('nav.blog')}</a>
-          <a href={aboutPath(lang)}>{t('nav.about')}</a>
-          <div class="social-links" aria-label={t('nav.social')}>
-            <a href="https://x.com/madebygps" target="_blank" rel="me noopener noreferrer">X</a>
-            <a href="https://www.linkedin.com/in/madebygps" target="_blank" rel="me noopener noreferrer">LinkedIn</a>
-            <a href="https://www.youtube.com/madebygps" target="_blank" rel="me noopener noreferrer">YouTube</a>
-          </div>
-          <div class="lang-switch" aria-label={t('lang.label')}>
-            {lang === 'en' ? <span aria-current="true">EN</span> : <a href={altLangUrl}>EN</a>}
-            {lang === 'es' ? <span aria-current="true">ES</span> : <a href={altLangUrl}>ES</a>}
-          </div>
+          <a href={blogPath(lang)} aria-current={Astro.url.pathname.startsWith(blogPath(lang)) ? 'page' : undefined}>{t('nav.blog')}</a>
+          <a href="/read/" aria-current={Astro.url.pathname.replace(/\/$/, '') === '/read' ? 'page' : undefined}>{t('nav.books')}</a>
+          <a href={aboutPath(lang)} aria-current={Astro.url.pathname.replace(/\/$/, '') === aboutPath(lang).replace(/\/$/, '') ? 'page' : undefined}>{t('nav.about')}</a>
         </div>
       </nav>
     </header>
     )}
-    <main>
+    <main class:list={{ wide }}>
       <slot />
     </main>
     {!bare && (
     <footer>
+      <div class="footer-links">
+        <div class="social-links" aria-label={t('nav.social')}>
+          <a href="https://x.com/madebygps" target="_blank" rel="me noopener noreferrer">X</a>
+          <a href="https://www.linkedin.com/in/madebygps" target="_blank" rel="me noopener noreferrer">LinkedIn</a>
+          <a href="https://www.youtube.com/madebygps" target="_blank" rel="me noopener noreferrer">YouTube</a>
+        </div>
+        <div class="lang-switch" aria-label={t('lang.label')}>
+          {lang === 'en' ? <span aria-current="true">EN</span> : <a href={altLangUrl}>EN</a>}
+          {lang === 'es' ? <span aria-current="true">ES</span> : <a href={altLangUrl}>ES</a>}
+        </div>
+      </div>
       <small>{t('footer.builtWith')}</small>
     </footer>
     )}

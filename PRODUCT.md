@@ -28,7 +28,7 @@ The site is built with Astro and TypeScript, renders statically, supports Englis
 
 ## Brand Commitments
 
-The author's requested direction is minimal, monotone, calm, and clear. The interface should feel like a connected collection of Markdown notes, with an Obsidian-like graph reference for browsing.
+The author's requested direction is a modern personal notebook. Keep it warm, calm, compact, and clear. Introduce the author briefly, surface recent writing, and make Books and Learn to Cloud easy to find.
 
 ## Evidence on Hand
 
