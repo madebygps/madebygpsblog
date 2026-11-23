@@ -1,0 +1,16 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import BooksContent from '../../components/BooksContent.astro';
+import { readPath, useTranslations } from '../../i18n/utils';
+
+const t = useTranslations('es');
+---
+
+<BaseLayout
+  title={`${t('nav.books')} | madebygps`}
+  description={t('books.description')}
+  lang="es"
+  altLangUrl={readPath('en')}
+>
+  <BooksContent lang="es" />
+</BaseLayout>
