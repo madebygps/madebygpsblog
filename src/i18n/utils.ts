@@ -41,6 +41,10 @@ export function aboutPath(lang: Lang): string {
   return `${langPrefix(lang)}/about/`;
 }
 
+export function readPath(lang: Lang): string {
+  return `${langPrefix(lang)}/read/`;
+}
+
 export function tagPath(lang: Lang, slug: string): string {
   return `${langPrefix(lang)}/blog/tags/${slug}/`;
 }
