@@ -1,34 +1,35 @@
 ---
-import PostList from './PostList.astro';
-import { getDisplayPosts } from '../i18n/posts';
-import { blogPath, useTranslations, type Lang } from '../i18n/utils';
+import SocialLinks from './SocialLinks.astro';
+import { useTranslations, type Lang } from '../i18n/utils';
 
 type Props = { lang: Lang };
 const { lang } = Astro.props;
 const t = useTranslations(lang);
-const posts = (await getDisplayPosts(lang)).slice(0, 4);
 ---
 
-<section class="home-intro">
-  <h1>{t('home.title')}</h1>
-  <p class="lede">{t('home.intro')}</p>
+<section class="home-profile" aria-labelledby="profile-title">
+  <h1 id="profile-title" class="visually-hidden">{t('home.title')}</h1>
+  <p class="profile-bio">{t('home.intro')}</p>
+  <SocialLinks lang={lang} />
 </section>
 
-<section aria-labelledby="recent-writing">
-  <div class="section-heading">
-    <h2 id="recent-writing">{t('home.recent')}</h2>
-    <a href={blogPath(lang)}>{t('home.allWriting')} &rarr;</a>
-  </div>
-  <PostList lang={lang} posts={posts} groupByYear={false} showTags={false} />
+<section class="profile-updates" aria-label={t('home.lately')}>
+  <dl>
+    <div class="profile-row">
+      <dt>{t('home.building')}</dt>
+      <dd><a href="https://github.com/learntocloud/learn-to-cloud-app" target="_blank" rel="noopener noreferrer">Learn to Cloud <span aria-hidden="true">↗</span></a></dd>
+    </div>
+    <div class="profile-row">
+      <dt>{t('home.writing')}</dt>
+      <dd><a href="https://madebygps.substack.com/p/my-weekly-screen-time-is-41-minutes" lang="en" target="_blank" rel="noopener noreferrer">My weekly screen time average is 41 minutes <span aria-hidden="true">↗</span></a></dd>
+    </div>
+    <div class="profile-row">
+      <dt>{t('home.reading')}</dt>
+      <dd>Code {t('home.by')} Charles Petzold</dd>
+    </div>
+    <div class="profile-row">
+      <dt>{t('home.sharing')}</dt>
+      <dd><a href="https://www.youtube.com/watch?v=Cifpa5ZxYmM" lang="en" target="_blank" rel="noopener noreferrer">A great book to teach you the most important tech skill for the AI era <span aria-hidden="true">↗</span></a></dd>
+    </div>
+  </dl>
 </section>
-
-<div class="home-resources">
-  <section>
-    <h2><a href="/read/">{t('nav.books')} &rarr;</a></h2>
-    <p>{t('home.booksDescription')}</p>
-  </section>
-  <section>
-    <h2><a href="https://learntocloud.guide">Learn to Cloud &rarr;</a></h2>
-    <p>{t('home.cloudDescription')}</p>
-  </section>
-</div>

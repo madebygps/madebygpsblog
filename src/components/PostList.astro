@@ -1,20 +1,17 @@
 ---
-import { tagSlug } from '../lib/tags';
-import { formatDate, postPath, tagPath, useTranslations, type Lang } from '../i18n/utils';
+import { postPath, useTranslations, type Lang } from '../i18n/utils';
 import { postSlug, type BlogPost } from '../i18n/posts';
 
 type Props = {
   lang: Lang;
   posts: BlogPost[];
-  groupByYear?: boolean;
-  showTags?: boolean;
 };
 
-const { lang, posts, groupByYear = true, showTags = true } = Astro.props;
+const { lang, posts } = Astro.props;
 const t = useTranslations(lang);
 
 const postsByYear = posts.reduce((groups, post) => {
-  const year = groupByYear ? post.data.pubDate.getFullYear().toString() : '';
+  const year = post.data.pubDate.getUTCFullYear().toString();
   const yearPosts = groups.get(year) ?? [];
   yearPosts.push(post);
   groups.set(year, yearPosts);
@@ -26,30 +23,14 @@ const postsByYear = posts.reduce((groups, post) => {
   posts.length > 0 ? (
     <div class="post-list" aria-label={t('blog.allPosts')}>
       {[...postsByYear.entries()].map(([year, yearPosts]) => (
-        <section class="post-group" aria-labelledby={groupByYear ? `year-${year}` : undefined}>
-          {groupByYear && <h2 id={`year-${year}`} class="year-label">
-            {year}
-            <span class="year-count">{yearPosts.length}</span>
-          </h2>}
+        <section class="post-group" aria-labelledby={`year-${year}`}>
+          <h2 id={`year-${year}`} class="year-label">{year}</h2>
           <ul class="post-files">
             {yearPosts.map((post) => (
               <li class="post-file">
                 <a class="post-file-link" href={postPath(post.data.lang, postSlug(post))}>
-                  <time class="post-date" datetime={post.data.pubDate.toISOString()}>
-                    {formatDate(post.data.pubDate, lang)}
-                  </time>
                   <span class="post-title">{post.data.title}</span>
                 </a>
-                <p class="post-summary">{post.data.description}</p>
-                {showTags && post.data.tags.length > 0 && (
-                  <div class="tags" aria-label={`${t('tag.tagsFor')} ${post.data.title}`}>
-                    {post.data.tags.map((tag) => (
-                      <a class="tag" href={tagPath(lang, tagSlug(tag))}>
-                        {tag}
-                      </a>
-                    ))}
-                  </div>
-                )}
               </li>
             ))}
           </ul>

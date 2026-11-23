@@ -7,11 +7,10 @@ type Props = {
   description?: string;
   lang?: Lang;
   altLangUrl?: string;
-  bare?: boolean;
   wide?: boolean;
 };
 
-const { title, lang = defaultLang, bare = false, wide = false } = Astro.props;
+const { title, lang = defaultLang, wide = false } = Astro.props;
 const t = useTranslations(lang);
 const description = Astro.props.description ?? t('site.description');
 const otherLang: Lang = lang === 'en' ? 'es' : 'en';
@@ -44,14 +43,14 @@ const altLangUrl = Astro.props.altLangUrl ?? homePath(otherLang);
     <style is:global>
       :root {
         color-scheme: light;
-        --background: #faf8f4;
-        --surface: #f0ece5;
-        --surface-muted: #e8e2d8;
-        --text: #292724;
-        --muted: #6b625a;
-        --accent: #9b4933;
-        --accent-strong: #753522;
-        --border: #ddd5ca;
+        --background: #fdfcfb;
+        --surface: #f1f1eb;
+        --surface-muted: #e7e9e1;
+        --text: #2d2e29;
+        --muted: #72756c;
+        --accent: #536747;
+        --accent-strong: #37482e;
+        --border: #e7e8e2;
         --shelf-wood: #8a6a4a;
         --spine-0-bg: #7b3028;
         --spine-0-fg: #f4f2ea;
@@ -65,9 +64,10 @@ const altLangUrl = Astro.props.altLangUrl ?? homePath(otherLang);
         --spine-4-fg: #e9e6de;
         --spine-5-bg: #c2873a;
         --spine-5-fg: #1d1c19;
-        --measure: 44rem;
+        --measure: 35rem;
         --shell: 52rem;
-        --reading: 39rem;
+        --reading: 35rem;
+        --top-space: clamp(55px, 13vh, 135px);
         --sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
         --serif: Georgia, "Times New Roman", serif;
         --mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
@@ -78,22 +78,31 @@ const altLangUrl = Astro.props.altLangUrl ?? homePath(otherLang);
         box-sizing: border-box;
       }
 
+      html {
+        scrollbar-gutter: stable;
+      }
+
       body {
         background: var(--background);
         color: var(--text);
-        font-size: 1rem;
-        line-height: 1.65;
+        display: flex;
+        flex-direction: column;
+        font-size: 0.875rem;
+        line-height: 1.8;
         margin: 0;
+        min-height: 100svh;
+        padding: var(--top-space) 0 4rem;
       }
 
       a {
-        color: var(--accent);
+        color: inherit;
+        text-decoration: none;
         text-decoration-thickness: 0.06em;
         text-underline-offset: 0.18em;
       }
 
       a:hover {
-        color: var(--accent-strong);
+        text-decoration: underline;
       }
 
       :focus-visible {
@@ -114,16 +123,11 @@ const altLangUrl = Astro.props.altLangUrl ?? homePath(otherLang);
       body > main,
       body > footer {
         margin-inline: auto;
-        width: min(100% - 2.5rem, var(--measure));
-      }
-
-      body > header {
-        padding: 1.75rem 0 1.25rem;
-        width: min(100% - 2.5rem, var(--shell));
+        width: min(100% - 3rem, var(--measure));
       }
 
       body > main {
-        padding: 2.5rem 0 3.5rem;
+        margin-top: 2rem;
       }
 
       body > main.wide {
@@ -131,70 +135,66 @@ const altLangUrl = Astro.props.altLangUrl ?? homePath(otherLang);
       }
 
       body > footer {
-        border-top: 1px solid var(--border);
-        color: var(--muted);
-        font-size: 0.85rem;
-        padding: 1.25rem 0 2rem;
-        width: min(100% - 2.5rem, var(--shell));
-      }
-
-      .footer-links {
         align-items: baseline;
+        color: var(--muted);
         display: flex;
         flex-wrap: wrap;
-        gap: 1rem 2rem;
-        margin-bottom: 0.75rem;
-      }
-
-      .footer-links .lang-switch {
-        margin-left: auto;
-      }
-
-      body > footer small {
-        font-size: 0.75rem;
+        font-size: 0.6875rem;
+        gap: 1rem;
+        justify-content: space-between;
+        margin-top: auto;
+        padding-top: 3.375rem;
       }
 
       .site-nav {
-        align-items: baseline;
+        align-items: center;
         display: flex;
-        flex-wrap: wrap;
-        gap: 1.25rem;
+        gap: 1.5rem;
+        justify-content: space-between;
+        min-height: 2.75rem;
       }
 
-      .site-nav > a {
+      .site-brand {
+        align-items: center;
         color: var(--text);
-        font-size: 1.05rem;
-        font-weight: 650;
-        letter-spacing: -0.04em;
+        display: flex;
+        flex-shrink: 0;
+        font-size: 1.4375rem;
+        font-weight: 600;
+        gap: 0.875rem;
+        letter-spacing: -0.04375rem;
+        line-height: 1.3;
+      }
+
+      .site-brand:hover {
         text-decoration: none;
+      }
+
+      .site-avatar {
+        background: var(--surface-muted);
+        border-radius: 50%;
+        height: 2.75rem;
+        object-fit: cover;
+        width: 2.75rem;
       }
 
       .nav-links,
-      .social-links,
       .lang-switch {
         align-items: baseline;
         display: flex;
-        gap: 1rem;
       }
 
       .nav-links {
-        flex-wrap: wrap;
-        margin-left: auto;
+        gap: 1.3125rem;
       }
 
-      .nav-links a,
-      .lang-switch span[aria-current] {
-        font-size: 0.9rem;
-        text-decoration: none;
+      .lang-switch {
+        gap: 0.75rem;
       }
 
       .nav-links > a {
-        color: var(--text);
-      }
-
-      .social-links a,
-      .lang-switch a {
         color: var(--muted);
+        font-size: 0.75rem;
       }
 
       .lang-switch span[aria-current] {
@@ -202,9 +202,9 @@ const altLangUrl = Astro.props.altLangUrl ?? homePath(otherLang);
       }
 
       .nav-links a[aria-current="page"] {
-        color: var(--accent);
+        color: var(--text);
         text-decoration: underline;
-        text-underline-offset: 0.4em;
+        text-decoration-color: var(--muted);
       }
 
       .site-nav a:hover,
@@ -219,9 +219,9 @@ const altLangUrl = Astro.props.altLangUrl ?? homePath(otherLang);
       }
 
       h1 {
-        font-size: clamp(2rem, 5vw, 2.75rem);
+        font-size: 1.4375rem;
         font-weight: 600;
-        letter-spacing: -0.04em;
+        letter-spacing: -0.04375rem;
         margin: 0;
       }
 
@@ -254,8 +254,26 @@ const altLangUrl = Astro.props.altLangUrl ?? homePath(otherLang);
       }
 
       .page-head {
-        margin: 0 0 2rem;
+        margin: 0 0 2.125rem;
         text-align: left;
+      }
+
+      .archive-head {
+        align-items: baseline;
+        display: flex;
+        gap: 1.5rem;
+        justify-content: space-between;
+      }
+
+      .page-body {
+        color: var(--text);
+        font-size: 0.875rem;
+        line-height: 2;
+      }
+
+      .page-body a {
+        text-decoration: underline;
+        text-decoration-color: var(--muted);
       }
 
       .page-head .lede {
@@ -281,6 +299,16 @@ const altLangUrl = Astro.props.altLangUrl ?? homePath(otherLang);
         gap: 0.35rem 1.25rem;
         justify-content: flex-start;
         margin: 1.25rem 0 0;
+      }
+
+      .topic-filter select {
+        background: var(--background);
+        border: 0;
+        color: var(--muted);
+        cursor: pointer;
+        font: 0.6875rem var(--sans);
+        max-width: 9rem;
+        padding: 0.3125rem 0 0.3125rem 0.4375rem;
       }
 
       .tags {
@@ -309,22 +337,24 @@ const altLangUrl = Astro.props.altLangUrl ?? homePath(otherLang);
         margin-left: 0.3rem;
       }
 
+      .post-group {
+        column-gap: 1.4375rem;
+        display: grid;
+        grid-template-columns: 4.125rem minmax(0, 1fr);
+      }
+
       .post-group + .post-group {
-        margin-top: 2rem;
+        margin-top: 1.6875rem;
       }
 
       .year-label {
         color: var(--muted);
-        font-size: 0.8rem;
-        font-weight: 500;
+        font-size: 0.75rem;
+        font-weight: 400;
+        line-height: 1.8;
         margin: 0;
-        padding: 0 0 0.5rem;
+        padding-top: 0.5rem;
         text-align: left;
-      }
-
-      .year-count {
-        color: var(--muted);
-        margin-left: 0.6rem;
       }
 
       .post-files {
@@ -334,7 +364,7 @@ const altLangUrl = Astro.props.altLangUrl ?? homePath(otherLang);
       }
 
       .post-file {
-        padding: 0.9rem 0;
+        padding: 0.5rem 0;
       }
 
       .post-file-link {
@@ -343,18 +373,11 @@ const altLangUrl = Astro.props.altLangUrl ?? homePath(otherLang);
         text-decoration: none;
       }
 
-      .post-date {
-        color: var(--muted);
-        display: block;
-        font-size: 0.8rem;
-        margin: 0 0 0.25rem;
-      }
-
       .post-title {
         display: block;
-        font-size: 1.15rem;
-        font-weight: 550;
-        line-height: 1.35;
+        font-size: 0.875rem;
+        font-weight: 400;
+        line-height: 1.8;
       }
 
       .post-file-link:hover .post-title,
@@ -362,12 +385,6 @@ const altLangUrl = Astro.props.altLangUrl ?? homePath(otherLang);
         color: var(--accent);
         text-decoration: underline;
         text-underline-offset: 0.18em;
-      }
-
-      .post-summary {
-        color: var(--muted);
-        font-size: 0.95rem;
-        margin: 0.35rem 0 0;
       }
 
       .empty-state {
@@ -405,46 +422,77 @@ const altLangUrl = Astro.props.altLangUrl ?? homePath(otherLang);
         margin-top: 1rem;
       }
 
-      .home-intro {
-        margin-bottom: 2.5rem;
-        max-width: 36rem;
+      .post-article h1 {
+        font-size: clamp(1.5rem, 4vw, 2rem);
+        line-height: 1.3;
       }
 
-      .section-heading {
-        align-items: baseline;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem 1.5rem;
-        justify-content: space-between;
-        margin-bottom: 0.5rem;
+      .post-article a {
+        color: var(--accent);
+        text-decoration: underline;
       }
 
-      .section-heading h2 {
-        font-size: 1rem;
+      .post-article .tag {
+        text-decoration: none;
+      }
+
+      .profile-bio {
+        color: var(--muted);
+        font-size: 0.8125rem;
         margin: 0;
       }
 
-      .section-heading a {
-        font-size: 0.85rem;
+      .social-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-top: 0.75rem;
       }
 
-      .home-resources {
-        border-top: 1px solid var(--border);
-        display: grid;
-        gap: 1.5rem;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        margin-top: 2rem;
-        padding-top: 1.5rem;
-      }
-
-      .home-resources h2 {
-        font-size: 1rem;
-        margin: 0 0 0.4rem;
-      }
-
-      .home-resources p {
+      .social-links a {
+        align-items: center;
         color: var(--muted);
-        font-size: 0.9rem;
+        display: flex;
+        height: 1.75rem;
+        justify-content: center;
+        width: 1.5rem;
+      }
+
+      .social-links a:hover,
+      .social-links a:focus-visible {
+        color: var(--text);
+      }
+
+      .social-links svg {
+        height: 1.0625rem;
+        width: 1.0625rem;
+      }
+
+      .profile-updates {
+        border-top: 1px solid var(--border);
+        margin-top: 2.3125rem;
+        padding-top: 1.25rem;
+      }
+
+      .profile-updates dl {
+        margin: 0;
+      }
+
+      .profile-row {
+        align-items: baseline;
+        column-gap: 1.4375rem;
+        display: grid;
+        grid-template-columns: 4.125rem minmax(0, 1fr);
+        padding: 0.8125rem 0;
+      }
+
+      .profile-row dt {
+        color: var(--muted);
+        font-size: 0.75rem;
+      }
+
+      .profile-row dd {
+        font-size: 0.875rem;
         margin: 0;
       }
 
@@ -555,97 +603,6 @@ const altLangUrl = Astro.props.altLangUrl ?? homePath(otherLang);
         margin-top: 2rem;
       }
 
-      .links-social {
-        display: flex;
-        gap: 0.75rem;
-        justify-content: center;
-        margin-top: 1.5rem;
-      }
-
-      .links-social a {
-        align-items: center;
-        color: var(--text);
-        display: inline-flex;
-        height: 2.75rem;
-        justify-content: center;
-        width: 2.75rem;
-      }
-
-      .links-social a:hover,
-      .links-social a:focus-visible {
-        color: var(--accent);
-      }
-
-      .links-social svg {
-        display: block;
-        height: 1.4rem;
-        width: 1.4rem;
-      }
-
-      .link-list {
-        display: grid;
-        gap: 0.85rem;
-        list-style: none;
-        margin: 0;
-        padding: 0;
-      }
-
-      .link-list a {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        color: var(--text);
-        display: block;
-        font-family: var(--mono);
-        padding: 1rem 1.25rem;
-        text-align: center;
-        text-decoration: none;
-      }
-
-      .link-title,
-      .link-subtitle {
-        display: block;
-      }
-
-      .link-title {
-        font-size: 0.9rem;
-        font-weight: 700;
-      }
-
-      .link-subtitle {
-        color: var(--muted);
-        font-size: 0.75rem;
-        line-height: 1.5;
-        margin-top: 0.35rem;
-      }
-
-      .link-list a:hover,
-      .link-list a:focus-visible {
-        border-color: var(--accent);
-        color: var(--accent);
-      }
-
-      .links-resources {
-        margin-top: 3rem;
-      }
-
-      .links-resources h2 {
-        margin: 0 0 0.75rem;
-        text-align: center;
-      }
-
-      .links-footer {
-        margin: 3rem 0 0;
-        text-align: center;
-      }
-
-      .links-footer a {
-        color: var(--muted);
-        font-family: var(--mono);
-        font-size: 0.72rem;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-      }
-
       .shelf + .shelf {
         margin-top: 3rem;
       }
@@ -689,6 +646,7 @@ const altLangUrl = Astro.props.altLangUrl ?? homePath(otherLang);
       .spine:hover,
       .spine:focus-visible {
         color: var(--spine-fg);
+        text-decoration: none;
         transform: translateY(-0.75rem);
       }
 
@@ -800,33 +758,35 @@ const altLangUrl = Astro.props.altLangUrl ?? homePath(otherLang);
         }
       }
 
-      @media (max-width: 640px) {
-        body > header {
-          padding-top: 1.5rem;
+      @media (max-width: 480px) {
+        :root {
+          --top-space: 55px;
         }
 
-        body > main {
-          padding: 2.5rem 0 3.5rem;
-        }
-
-        .site-nav {
-          gap: 0.9rem;
+        body > header,
+        body > main,
+        body > footer {
+          width: calc(100% - 2.75rem);
         }
 
         .nav-links {
-          gap: 0.9rem;
+          gap: 1rem;
         }
 
-        .page-head {
-          margin-bottom: 1.75rem;
+        .post-group,
+        .profile-row {
+          column-gap: 1.0625rem;
+          grid-template-columns: 3.5rem minmax(0, 1fr);
         }
 
-        .home-resources {
-          grid-template-columns: 1fr;
+        .post-title,
+        .profile-row dd,
+        .page-body {
+          font-size: 0.8125rem;
         }
 
-        .footer-links .lang-switch {
-          margin-left: 0;
+        .profile-bio {
+          font-size: 0.75rem;
         }
       }
     </style>
@@ -854,36 +814,27 @@ const altLangUrl = Astro.props.altLangUrl ?? homePath(otherLang);
     </script>
   </head>
   <body>
-    {!bare && (
     <header>
       <nav class="site-nav" aria-label={t('nav.main')}>
-        <a href={homePath(lang)}>madebygps</a>
+        <a class="site-brand" href={homePath(lang)} aria-label={`GPS · ${t('nav.home')}`}>
+          <img class="site-avatar" src="/images/gps.jpg" alt="" width="44" height="44" />
+          <span>GPS</span>
+        </a>
         <div class="nav-links">
           <a href={blogPath(lang)} aria-current={Astro.url.pathname.startsWith(blogPath(lang)) ? 'page' : undefined}>{t('nav.blog')}</a>
-          <a href="/read/" aria-current={Astro.url.pathname.replace(/\/$/, '') === '/read' ? 'page' : undefined}>{t('nav.books')}</a>
           <a href={aboutPath(lang)} aria-current={Astro.url.pathname.replace(/\/$/, '') === aboutPath(lang).replace(/\/$/, '') ? 'page' : undefined}>{t('nav.about')}</a>
         </div>
       </nav>
     </header>
-    )}
     <main class:list={{ wide }}>
       <slot />
     </main>
-    {!bare && (
     <footer>
-      <div class="footer-links">
-        <div class="social-links" aria-label={t('nav.social')}>
-          <a href="https://x.com/madebygps" target="_blank" rel="me noopener noreferrer">X</a>
-          <a href="https://www.linkedin.com/in/madebygps" target="_blank" rel="me noopener noreferrer">LinkedIn</a>
-          <a href="https://www.youtube.com/madebygps" target="_blank" rel="me noopener noreferrer">YouTube</a>
-        </div>
-        <div class="lang-switch" aria-label={t('lang.label')}>
-          {lang === 'en' ? <span aria-current="true">EN</span> : <a href={altLangUrl}>EN</a>}
-          {lang === 'es' ? <span aria-current="true">ES</span> : <a href={altLangUrl}>ES</a>}
-        </div>
+      <a href="https://github.com/madebygps/madebygpsblog" target="_blank" rel="noopener noreferrer">{t('footer.builtWith')}</a>
+      <div class="lang-switch" aria-label={t('lang.label')}>
+        {lang === 'en' ? <span aria-current="true">EN</span> : <a href={altLangUrl}>EN</a>}
+        {lang === 'es' ? <span aria-current="true">ES</span> : <a href={altLangUrl}>ES</a>}
       </div>
-      <small>{t('footer.builtWith')}</small>
     </footer>
-    )}
   </body>
 </html>
