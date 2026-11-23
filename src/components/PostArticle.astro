@@ -12,7 +12,7 @@ const { lang, post } = Astro.props;
 const t = useTranslations(lang);
 ---
 
-<article>
+<article class="post-article">
   <header class="page-head">
     <p class="post-meta">{formatDate(post.data.pubDate, lang)}</p>
     {
