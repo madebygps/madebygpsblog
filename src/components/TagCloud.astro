@@ -1,6 +1,6 @@
 ---
 import { tagSlug } from '../lib/tags';
-import { tagPath, useTranslations, type Lang } from '../i18n/utils';
+import { blogPath, tagPath, useTranslations, type Lang } from '../i18n/utils';
 
 type Props = {
   lang: Lang;
@@ -13,15 +13,28 @@ const t = useTranslations(lang);
 
 {
   tags.length > 0 && (
-    <nav class="tag-cloud" aria-label={t('blog.browseByTopic')}>
-      {tags.map(([tag, count]) => (
-        <a class="tag" href={tagPath(lang, tagSlug(tag))}>
-          {tag}{' '}
-          <span aria-label={`${count} ${count === 1 ? t('blog.post') : t('blog.posts')}`}>
-            {count}
-          </span>
-        </a>
-      ))}
+    <nav class="topic-filter" aria-label={t('blog.browseByTopic')}>
+      <select aria-label={t('blog.browseByTopic')} data-topic-filter>
+        <option value={blogPath(lang)}>{t('blog.allTopics')}</option>
+        {tags.map(([tag]) => (
+          <option value={tagPath(lang, tagSlug(tag))}>{tag}</option>
+        ))}
+      </select>
+      <noscript>
+        <div class="tag-cloud">
+          {tags.map(([tag]) => (
+            <a class="tag" href={tagPath(lang, tagSlug(tag))}>{tag}</a>
+          ))}
+        </div>
+      </noscript>
     </nav>
   )
 }
+
+<script>
+  document.querySelectorAll<HTMLSelectElement>('[data-topic-filter]').forEach((select) => {
+    select.addEventListener('change', () => {
+      window.location.assign(select.value);
+    });
+  });
+</script>

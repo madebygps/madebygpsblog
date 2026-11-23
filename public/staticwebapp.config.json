@@ -1,4 +1,7 @@
 {
+  "routes": [
+    { "route": "/links", "redirect": "/", "statusCode": 301 }
+  ],
   "globalHeaders": {
     "X-Content-Type-Options": "nosniff",
     "X-Frame-Options": "DENY"

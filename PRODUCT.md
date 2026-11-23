@@ -28,7 +28,7 @@ The site is built with Astro and TypeScript, renders statically, supports Englis
 
 ## Brand Commitments
 
-The author's requested direction is a modern personal notebook. Keep it warm, calm, compact, and clear. Introduce the author briefly, surface recent writing, and make Books and Learn to Cloud easy to find.
+The author's requested direction is a quiet personal profile. Keep it warm, calm, compact, and clear. Show a short bio, social icons, and four selected updates: Building, Writing, Reading, and Sharing. Keep Writing and About in a stable shared header. Link to the bookshelf from About. The homepage also serves as the link-in-bio page, with `/links` redirecting home.
 
 ## Evidence on Hand
 
