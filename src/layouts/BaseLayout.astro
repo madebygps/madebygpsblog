@@ -51,6 +51,19 @@ const altLangUrl = Astro.props.altLangUrl ?? homePath(otherLang);
         --accent: #7b3028;
         --accent-strong: #5e231e;
         --border: #bab6ab;
+        --shelf-wood: #8a6a4a;
+        --spine-0-bg: #7b3028;
+        --spine-0-fg: #f4f2ea;
+        --spine-1-bg: #2f3e46;
+        --spine-1-fg: #f4f2ea;
+        --spine-2-bg: #d8c9a3;
+        --spine-2-fg: #1d1c19;
+        --spine-3-bg: #3e5a49;
+        --spine-3-fg: #f4f2ea;
+        --spine-4-bg: #1d1c19;
+        --spine-4-fg: #e9e6de;
+        --spine-5-bg: #c2873a;
+        --spine-5-fg: #1d1c19;
         --measure: 40rem;
         --mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
         font-family: Georgia, "Times New Roman", serif;
@@ -566,6 +579,101 @@ const altLangUrl = Astro.props.altLangUrl ?? homePath(otherLang);
         font-size: 0.72rem;
         letter-spacing: 0.12em;
         text-transform: uppercase;
+      }
+
+      .shelf + .shelf {
+        margin-top: 3rem;
+      }
+
+      .shelf-label {
+        color: var(--muted);
+        font-family: var(--mono);
+        font-size: 0.72rem;
+        font-weight: 400;
+        letter-spacing: 0.18em;
+        margin: 0 0 1rem;
+        text-transform: uppercase;
+      }
+
+      .shelf-row {
+        align-items: flex-end;
+        border-bottom: 0.6rem solid var(--shelf-wood);
+        box-shadow: 0 0.6rem 0.9rem -0.6rem rgb(0 0 0 / 0.35);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.2rem;
+        list-style: none;
+        margin: 0;
+        min-height: 15rem;
+        padding: 1rem 0.75rem 0;
+      }
+
+      .spine {
+        background:
+          linear-gradient(90deg, rgb(0 0 0 / 0.22), transparent 16%, rgb(255 255 255 / 0.08) 50%, transparent 84%, rgb(0 0 0 / 0.26)),
+          var(--spine-bg);
+        border-radius: 2px 2px 0 0;
+        color: var(--spine-fg);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        height: var(--spine-h);
+        overflow: hidden;
+        text-decoration: none;
+        transition: transform 0.25s ease;
+        width: var(--spine-w);
+      }
+
+      .spine:hover,
+      .spine:focus-visible {
+        color: var(--spine-fg);
+        transform: translateY(-0.75rem);
+      }
+
+      .spine-tone-0 { --spine-bg: var(--spine-0-bg); --spine-fg: var(--spine-0-fg); }
+      .spine-tone-1 { --spine-bg: var(--spine-1-bg); --spine-fg: var(--spine-1-fg); }
+      .spine-tone-2 { --spine-bg: var(--spine-2-bg); --spine-fg: var(--spine-2-fg); }
+      .spine-tone-3 { --spine-bg: var(--spine-3-bg); --spine-fg: var(--spine-3-fg); }
+      .spine-tone-4 { --spine-bg: var(--spine-4-bg); --spine-fg: var(--spine-4-fg); }
+      .spine-tone-5 { --spine-bg: var(--spine-5-bg); --spine-fg: var(--spine-5-fg); }
+
+      .spine-number {
+        border-bottom: 1px solid currentColor;
+        flex: none;
+        font-family: var(--mono);
+        font-size: 0.62rem;
+        letter-spacing: 0.06em;
+        padding: 0.45rem 0 0.35rem;
+        text-align: center;
+        width: 100%;
+      }
+
+      .spine-title {
+        flex: 1 1 0;
+        font-size: 0.85rem;
+        font-weight: 700;
+        line-height: 1.1;
+        min-height: 0;
+        overflow: hidden;
+        padding: 0.6rem 0;
+        text-align: center;
+        writing-mode: vertical-rl;
+      }
+
+      .spine-author {
+        flex: none;
+        font-family: var(--mono);
+        font-size: 0.55rem;
+        letter-spacing: 0.12em;
+        padding: 0 0 0.6rem;
+        text-transform: uppercase;
+        writing-mode: vertical-rl;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .spine {
+          transition: none;
+        }
       }
 
       @media (max-width: 640px) {

@@ -1,0 +1,152 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+type Book = { title: string; author: string; href: string; spineAuthor?: string };
+
+const shelves: { name: string; books: Book[] }[] = [
+  {
+    name: 'Understanding the Impact of Tech',
+    books: [
+      { title: 'Recoding America', author: 'Jennifer Pahlka', href: 'https://www.recodingamerica.us/' },
+      { title: 'The Coming Wave', author: 'Mustafa Suleyman', href: 'https://www.the-coming-wave.com/' },
+      { title: 'Tools and Weapons', author: 'Brad Smith', href: 'https://www.penguinrandomhouse.com/books/604709/tools-and-weapons-by-brad-smith-and-carol-ann-browne/' },
+      { title: 'Burn Book', author: 'Kara Swisher', href: 'https://www.pbsbooks.org/virtual-library/burn-book-a-tech-love-story/' },
+    ],
+  },
+  {
+    name: 'Improve my focus',
+    books: [
+      { title: 'Digital Minimalism', author: 'Cal Newport', href: 'https://calnewport.com/my-new-book-digital-minimalism/' },
+      { title: 'Stolen Focus', author: 'Johann Hari', href: 'https://stolenfocusbook.com/' },
+    ],
+  },
+  {
+    name: 'Improve my discipline',
+    books: [
+      { title: 'Grit', author: 'Angela Duckworth', href: 'https://angeladuckworth.com/grit-book/' },
+      { title: 'Discipline Is Destiny', author: 'Ryan Holiday', href: 'https://store.dailystoic.com/pages/discipline-is-destiny' },
+    ],
+  },
+  {
+    name: 'Improve my soul',
+    books: [
+      { title: 'Stillness Is the Key', author: 'Ryan Holiday', href: 'https://dailystoic.com/stillness-is-the-key/' },
+      { title: 'An Emotional Education', author: 'The School of Life', spineAuthor: 'School of Life', href: 'https://www.theschooloflife.com/shop/an-emotional-education/' },
+      { title: 'Together', author: 'Vivek Murthy', href: 'https://www.vivekmurthy.com/together-book' },
+      { title: 'The Daily Stoic', author: 'Ryan Holiday', href: 'https://www.goodreads.com/book/show/29093292-the-daily-stoic' },
+      { title: 'All About Love', author: 'bell hooks', href: 'https://bellhooksbooks.com/product/all-about-love/' },
+    ],
+  },
+  {
+    name: 'Get lost in other worlds',
+    books: [
+      { title: 'Stories of Your Life and Others', author: 'Ted Chiang', href: 'https://www.penguinrandomhouse.com/books/538163/stories-of-your-life-and-others-by-ted-chiang/' },
+      { title: 'The Phoenix Project', author: 'Gene Kim', href: 'https://itrevolution.com/product/the-phoenix-project/' },
+      { title: 'Exhalation', author: 'Ted Chiang', href: 'https://www.penguinrandomhouse.com/books/538034/exhalation-by-ted-chiang/' },
+      { title: 'Babel', author: 'R. F. Kuang', href: 'https://www.harpercollins.com/products/babel-r-f-kuang?variant=39874690940962' },
+      { title: 'Project Hail Mary', author: 'Andy Weir', href: 'https://www.penguinrandomhouse.com/books/611060/project-hail-mary-by-andy-weir/' },
+      { title: 'The Mountain in the Sea', author: 'Ray Nayler', href: 'https://tombolobooks.com/item/3Czr8TaWU9-EJk7ukwhFFw' },
+      { title: 'Demon Copperhead', author: 'Barbara Kingsolver', href: 'https://concordbookshop.com/book/9780063251984' },
+    ],
+  },
+  {
+    name: 'Improve my critical thinking skills',
+    books: [
+      { title: 'What’s Our Problem?', author: 'Tim Urban', href: 'https://waitbutwhy.com/whatsourproblem' },
+      { title: 'Why Fish Don’t Exist', author: 'Lulu Miller', href: 'https://www.simonandschuster.com/books/Why-Fish-Dont-Exist/Lulu-Miller/9781501160349' },
+    ],
+  },
+  {
+    name: 'Improve my physical health',
+    books: [
+      { title: 'Why We Sleep', author: 'Matthew Walker', href: 'https://www.simonandschuster.com/books/Why-We-Sleep/Matthew-Walker/9781501144325' },
+      { title: 'The Body Keeps the Score', author: 'Bessel van der Kolk', spineAuthor: 'van der Kolk', href: 'https://www.besselvanderkolk.com/resources/the-body-keeps-the-score' },
+    ],
+  },
+  {
+    name: 'Improve my mental health',
+    books: [
+      { title: 'The Boy Who Was Raised as a Dog', author: 'Bruce D. Perry', href: 'https://www.hachettebookgroup.com/titles/bruce-d-perry/the-boy-who-was-raised-as-a-dog/9780465094455/?lens=basic-books' },
+    ],
+  },
+  {
+    name: 'Improve my financial status',
+    books: [
+      { title: 'I Will Teach You to Be Rich', author: 'Ramit Sethi', href: 'https://www.iwillteachyoutoberich.com/books/' },
+    ],
+  },
+  {
+    name: 'Standing on the shoulders of giants',
+    books: [
+      { title: 'Personal History', author: 'Katharine Graham', href: 'https://www.penguinrandomhouse.com/books/70346/personal-history-by-katharine-graham/' },
+      { title: 'Einstein', author: 'Walter Isaacson', href: 'https://www.simonandschuster.com/books/Einstein/Walter-Isaacson/9780743264747' },
+      { title: 'Meditations', author: 'Marcus Aurelius', href: 'https://classics.mit.edu/Antoninus/meditations.html' },
+      { title: 'Lives of the Stoics', author: 'Ryan Holiday', href: 'https://www.penguinrandomhouse.com/books/605841/lives-of-the-stoics-by-ryan-holiday-and-stephen-hanselman/' },
+      { title: 'Leonardo da Vinci', author: 'Walter Isaacson', href: 'https://www.simonandschuster.com/books/Leonardo-da-Vinci/Walter-Isaacson/9781501139161' },
+      { title: 'The Last Days of the Incas', author: 'Kim MacQuarrie', href: 'https://www.simonandschuster.com/books/The-Last-Days-of-the-Incas/Kim-MacQuarrie/9780743260503' },
+    ],
+  },
+];
+
+const total = shelves.reduce((sum, shelf) => sum + shelf.books.length, 0);
+
+// Spread spine colors and sizes across the whole shelf so neighbors differ.
+const spineCount = 6;
+const heights = ['13.5rem', '12rem', '14.5rem', '12.75rem', '13.75rem'];
+const widths = ['3rem', '2.6rem', '3.3rem', '2.8rem'];
+let index = 0;
+const placed = shelves.map((shelf) => ({
+  ...shelf,
+  books: shelf.books.map((book) => {
+    const i = index++;
+    return {
+      ...book,
+      number: String(i + 1).padStart(2, '0'),
+      tone: (i * 5) % spineCount,
+      style: `--spine-h: ${heights[i % heights.length]}; --spine-w: ${widths[(i * 3) % widths.length]};`,
+    };
+  }),
+}));
+---
+
+<BaseLayout
+  title="Read | madebygps"
+  description="A shelf of books that helped me learn, grow, and become a better person. An ongoing list."
+  lang="en"
+>
+  <section class="page-head">
+    <p class="eyebrow">{total} books</p>
+    <h1>The shelf</h1>
+    <p class="lede">
+      Books that expanded my life. Not only tech, because the best technologists are well rounded.
+      This is an ongoing list that I update as I continue to read and live.
+    </p>
+  </section>
+
+  {
+    placed.map((shelf) => (
+      <section class="shelf">
+        <h2 class="shelf-label">{shelf.name}</h2>
+        <ul class="shelf-row">
+          {shelf.books.map((book) => (
+            <li>
+              <a
+                class={`spine spine-tone-${book.tone}`}
+                style={book.style}
+                href={book.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                title={`${book.title} by ${book.author}`}
+              >
+                <span class="spine-number">{book.number}</span>
+                <span class="spine-title">{book.title}</span>
+                <span class="spine-author">{book.spineAuthor ?? book.author.split(' ').at(-1)}</span>
+                <span class="visually-hidden"> by {book.author}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))
+  }
+</BaseLayout>
